@@ -6,9 +6,10 @@
   <title>WriteMyNotes AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Caveat:wght@400;600&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="editor.css">
+  <link rel="stylesheet" href="engine.css">
 </head>
 <body>
   <div class="app">
@@ -71,6 +72,19 @@
         </div>
 
         <div class="card">
+          <h3>🖼️ Handwriting Preview (Step 4 test)</h3>
+          <p class="muted">Ye abhi test preview hai. Poora live preview Step 7 mein banega.</p>
+          <div class="pv-bar">
+            <button class="btn" id="pvPrev" type="button">◀</button>
+            <span id="pvLabel">Page 1 / 1</span>
+            <button class="btn" id="pvNext" type="button">▶</button>
+            <button class="btn" id="pvRefresh" type="button">🔄 Refresh</button>
+          </div>
+          <div class="pv-wrap"><canvas id="pvCanvas" class="pv-canvas"></canvas></div>
+          <label class="pv-opt"><input type="checkbox" id="pvImperfect" checked> Slight imperfections (thoda natural variation)</label>
+        </div>
+
+        <div class="card">
           <h3>🔎 Auto-Format Preview</h3>
           <p class="muted">Yahan dikhta hai ki tumhara text kaise samjha gaya. Wording bilkul same rehti hai.</p>
           <div id="structure" class="structure"></div>
@@ -115,5 +129,6 @@
   <div class="toast-box" id="toastBox"></div>
   <script src="script.js"></script>
   <script src="editor.js"></script>
+  <script src="engine.js"></script>
 </body>
 </html>
