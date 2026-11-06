@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WriteMyNotes AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <nav class="nav" id="nav">
+      <div class="brand">
+        <span class="brand-logo">✍️</span>
+        <span class="brand-name">WriteMyNotes <b>AI</b></span>
+      </div>
+      <button class="nav-btn active" data-view="home"><span>🏠</span><em>Home</em></button>
+      <button class="nav-btn" data-view="editor"><span>📝</span><em>Write</em></button>
+      <button class="nav-btn" data-view="projects"><span>📁</span><em>Projects</em></button>
+      <button class="nav-btn" data-view="styles"><span>🔤</span><em>Styles</em></button>
+      <button class="nav-btn" data-view="paper"><span>📄</span><em>Paper</em></button>
+      <button class="nav-btn" data-view="help"><span>❓</span><em>Help</em></button>
+    </nav>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Home</h1>
+          <p class="tagline">Turn Your Text Into Beautiful Handwritten Notes.</p>
+        </div>
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode">🌙</button>
+      </header>
+
+      <section class="view active" id="view-home">
+        <div class="hero card">
+          <h2>Welcome to WriteMyNotes AI</h2>
+          <p>Apna text paste karo, paper aur pen chuno, aur handwritten-style PDF download karo.</p>
+          <button class="btn-primary" data-go="editor">➕ Create New Assignment</button>
+        </div>
+        <div class="grid">
+          <div class="card tile" data-go="editor"><h3>📝 Text to Handwriting</h3><p>Text likho ya paste karo.</p></div>
+          <div class="card tile" data-go="projects"><h3>📁 My Projects</h3><p>Saved assignments dekho.</p></div>
+          <div class="card tile" data-go="styles"><h3>🔤 Handwriting Styles</h3><p>Fonts aur pen colours.</p></div>
+          <div class="card tile" data-go="paper"><h3>📄 Paper Settings</h3><p>Ruled, plain, notebook.</p></div>
+        </div>
+        <div class="card">
+          <h3>Recent Assignments</h3>
+          <p class="muted" id="recentEmpty">Abhi koi assignment nahi hai. "Create New Assignment" dabao.</p>
+        </div>
+      </section>
+
+      <section class="view" id="view-editor">
+        <div class="card"><h3>Text-to-Handwriting Tool</h3><p class="muted">Editor Step 3 mein banega.</p></div>
+      </section>
+
+      <section class="view" id="view-projects">
+        <div class="card"><h3>My Projects</h3><p class="muted">Saving system Step 10 mein banega.</p></div>
+      </section>
+
+      <section class="view" id="view-styles">
+        <div class="card"><h3>Handwriting Styles</h3><p class="muted">Fonts aur pen colours Step 6 mein aayenge.</p></div>
+      </section>
+
+      <section class="view" id="view-paper">
+        <div class="card"><h3>Paper Settings</h3><p class="muted">Paper templates Step 5 mein aayenge.</p></div>
+      </section>
+
+      <section class="view" id="view-help">
+        <div class="card">
+          <h3>Help & About</h3>
+          <p><b>WriteMyNotes AI</b> aapke text ko handwriting-style digital pages mein badalta hai. Ye asli insaani handwriting nahi hai, sirf handwriting jaisa dikhne wala digital text hai.</p>
+          <p>Sab kuch aapke browser mein chalta hai. Aapka text kisi server par nahi jata.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-box" id="toastBox"></div>
+  <script src="script.js"></script>
+</body>
+</html>
