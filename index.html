@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="pen.css">
   <link rel="stylesheet" href="preview.css">
   <link rel="stylesheet" href="cover.css">
+  <link rel="stylesheet" href="pdf.css">
 </head>
 <body>
   <div class="app">
@@ -115,6 +116,24 @@
 
           <div class="pvx-wrap" id="pvxWrap"><canvas id="pvxCanvas"></canvas></div>
           <p class="muted small" id="pvxInfo"></p>
+        </div>
+
+        <div class="card" id="pdfCard">
+          <h3>📥 PDF Banao</h3>
+          <p class="muted">Cover page (agar on hai) aur saare pages ek PDF mein jaate hain. PDF preview jaisi hi dikhti hai.</p>
+          <div class="frow">
+            <label for="pdfQ">PDF quality</label>
+            <select id="pdfQ">
+              <option value="2">Standard (192 dpi, chhoti file)</option>
+              <option value="3">High (288 dpi, best print)</option>
+            </select>
+          </div>
+          <div class="pdf-actions">
+            <button class="btn-main" id="pdfDownload" type="button">⬇️ Download PDF</button>
+            <button class="btn" id="pdfPreview" type="button">👁️ Preview PDF</button>
+            <button class="btn" id="pdfPrint" type="button">🖨️ Print</button>
+          </div>
+          <p class="muted small" id="pdfInfo"></p>
         </div>
 
         <div class="card">
@@ -312,5 +331,7 @@
   <script src="pen.js"></script>
   <script src="cover.js"></script>
   <script src="preview.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="pdf.js"></script>
 </body>
 </html>
