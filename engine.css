@@ -1,0 +1,12 @@
+.pv-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+#pvLabel { font-size: 13px; font-weight: 600; min-width: 90px; text-align: center; }
+.pv-wrap {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px; display: flex; justify-content: center;
+}
+.pv-canvas {
+  width: 100%; max-width: 560px; height: auto; aspect-ratio: 794 / 1123;
+  background: #fff; box-shadow: 0 4px 18px rgba(0, 0, 0, .18); border-radius: 4px;
+}
+.pv-opt { display: block; margin-top: 10px; font-size: 13px; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
