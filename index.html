@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="editor.css">
 </head>
 <body>
   <div class="app">
@@ -53,7 +54,40 @@
       </section>
 
       <section class="view" id="view-editor">
-        <div class="card"><h3>Text-to-Handwriting Tool</h3><p class="muted">Editor Step 3 mein banega.</p></div>
+        <div class="card">
+          <h3>📝 Apna Text Likho</h3>
+          <div class="toolbar">
+            <button class="btn" id="btnSample" type="button">✨ Sample</button>
+            <button class="btn" id="btnUpload" type="button">📂 TXT Upload</button>
+            <button class="btn btn-danger" id="btnClear" type="button">🗑️ Clear All</button>
+          </div>
+          <input type="file" id="fileInput" accept=".txt,text/plain" hidden>
+          <textarea id="textInput" spellcheck="false" placeholder="Yahan apna assignment text paste ya type karo (English ya Hindi)..."></textarea>
+          <div class="counts">
+            <span id="wordCount">0 words</span>
+            <span id="charCount">0 characters</span>
+            <span id="saveState" class="muted"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🔎 Auto-Format Preview</h3>
+          <p class="muted">Yahan dikhta hai ki tumhara text kaise samjha gaya. Wording bilkul same rehti hai.</p>
+          <div id="structure" class="structure"></div>
+        </div>
+
+        <div class="card">
+          <h3>📌 Formatting Rules</h3>
+          <ul class="rules">
+            <li><code># Title</code> = Heading</li>
+            <li><code>## Title</code> = Subheading</li>
+            <li><code>1. text</code> = Numbered list</li>
+            <li><code>- text</code> ya <code>* text</code> = Bullet point</li>
+            <li>Chhoti ALL CAPS line = Heading (apne aap)</li>
+            <li>Chhoti line jo <code>:</code> par khatam ho = Subheading (apne aap)</li>
+            <li>Khaali line = Paragraph gap</li>
+          </ul>
+        </div>
       </section>
 
       <section class="view" id="view-projects">
@@ -80,5 +114,6 @@
 
   <div class="toast-box" id="toastBox"></div>
   <script src="script.js"></script>
+  <script src="editor.js"></script>
 </body>
 </html>
