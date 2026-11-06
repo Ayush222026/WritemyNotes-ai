@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="engine.css">
   <link rel="stylesheet" href="paper.css">
   <link rel="stylesheet" href="pen.css">
+  <link rel="stylesheet" href="preview.css">
 </head>
 <body>
   <div class="app">
@@ -73,16 +74,31 @@
           </div>
         </div>
 
-        <div class="card">
-          <h3>🖼️ Handwriting Preview (test)</h3>
-          <p class="muted">Ye abhi test preview hai. Poora live preview Step 7 mein banega.</p>
-          <div class="pv-bar">
-            <button class="btn" id="pvPrev" type="button">◀</button>
-            <span id="pvLabel">Page 1 / 1</span>
-            <button class="btn" id="pvNext" type="button">▶</button>
-            <button class="btn" id="pvRefresh" type="button">🔄 Refresh</button>
+        <div class="card" id="pvCard">
+          <h3>🖼️ Live Preview</h3>
+          <div class="qc">
+            <label>🖊️ Pen <select id="qPen"></select></label>
+            <label>📄 Paper <select id="qPaper"></select></label>
+            <label>🔤 Font <select id="qFont"></select></label>
           </div>
-          <div class="pv-wrap"><canvas id="pvCanvas" class="pv-canvas"></canvas></div>
+
+          <div class="pvx-bar">
+            <div class="pvx-group">
+              <button class="btn" id="pvxPrev" type="button" aria-label="Previous page">◀</button>
+              <select id="pvxPage" aria-label="Page chuno"></select>
+              <button class="btn" id="pvxNext" type="button" aria-label="Next page">▶</button>
+            </div>
+            <div class="pvx-group">
+              <button class="btn" id="pvxOut" type="button" aria-label="Zoom out">➖</button>
+              <span class="pvx-zoom" id="pvxZoom">100%</span>
+              <button class="btn" id="pvxIn" type="button" aria-label="Zoom in">➕</button>
+              <button class="btn" id="pvxFit" type="button">100%</button>
+            </div>
+            <button class="btn" id="pvxRefresh" type="button">🔄 Refresh</button>
+          </div>
+
+          <div class="pvx-wrap" id="pvxWrap"><canvas id="pvxCanvas"></canvas></div>
+          <p class="muted small" id="pvxInfo"></p>
         </div>
 
         <div class="card">
@@ -278,5 +294,6 @@
   <script src="engine.js"></script>
   <script src="paper.js"></script>
   <script src="pen.js"></script>
+  <script src="preview.js"></script>
 </body>
-                  </html>
+</html>
