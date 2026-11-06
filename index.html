@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="paper.css">
   <link rel="stylesheet" href="pen.css">
   <link rel="stylesheet" href="preview.css">
+  <link rel="stylesheet" href="cover.css">
 </head>
 <body>
   <div class="app">
@@ -71,6 +72,21 @@
             <span id="wordCount">0 words</span>
             <span id="charCount">0 characters</span>
             <span id="saveState" class="muted"></span>
+          </div>
+        </div>
+
+        <div class="card" id="cvCard">
+          <h3>📘 Cover Page</h3>
+          <label class="check"><input type="checkbox" id="cvOn"> Cover page add karo (assignment ke pehle page par)</label>
+          <div id="cvBody">
+            <p class="muted">Template chuno:</p>
+            <div class="tpl-grid" id="cvTpls"></div>
+            <div class="cv-fields" id="cvFields"></div>
+            <div class="toolbar">
+              <button class="btn" id="cvToday" type="button">📅 Aaj ki date</button>
+              <button class="btn btn-danger" id="cvClear" type="button">🗑️ Cover details clear</button>
+              <button class="btn" id="cvSee" type="button">👀 Preview dekho</button>
+            </div>
           </div>
         </div>
 
@@ -294,6 +310,7 @@
   <script src="engine.js"></script>
   <script src="paper.js"></script>
   <script src="pen.js"></script>
+  <script src="cover.js"></script>
   <script src="preview.js"></script>
 </body>
 </html>
