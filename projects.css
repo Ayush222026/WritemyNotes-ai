@@ -1,0 +1,54 @@
+.toast-box { z-index: 3000; }
+
+.proj-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+.proj-cur { font-size: 14px; min-width: 0; word-break: break-word; }
+.proj-bar .btn { padding: 8px 12px; font-size: 12px; }
+.proj-bar .muted { margin-left: auto; }
+
+.proj-list { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.proj-card {
+  border: 2px solid var(--border); background: var(--bg);
+  border-radius: 14px; padding: 14px;
+}
+.proj-card.current {
+  border-color: var(--blue); background: var(--card);
+  box-shadow: 0 0 0 3px rgba(79, 107, 255, .15);
+}
+.proj-title {
+  font-weight: 600; font-size: 15px; display: flex; align-items: center;
+  gap: 8px; flex-wrap: wrap; word-break: break-word;
+}
+.proj-badge {
+  font-size: 11px; background: var(--grad); color: #fff;
+  padding: 2px 10px; border-radius: 20px; font-weight: 600;
+}
+.proj-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.proj-snip {
+  font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.5;
+  max-height: 3em; overflow: hidden; word-break: break-word;
+}
+.proj-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.proj-btns .btn { padding: 8px 12px; font-size: 12px; }
+.proj-empty { font-size: 14px; color: var(--muted); }
+
+.recent-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.recent-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 1px solid var(--border); background: var(--bg); border-radius: 12px; padding: 10px 12px;
+}
+.recent-row .rt { min-width: 0; }
+.recent-row .rn { font-weight: 600; font-size: 14px; word-break: break-word; }
+.recent-row .rm { font-size: 12px; color: var(--muted); }
+.recent-row .btn { padding: 8px 12px; font-size: 12px; flex-shrink: 0; }
+
+.ask-in {
+  width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font: inherit; font-size: 15px;
+  outline: none; margin: 10px 0 14px;
+}
+.ask-in:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79, 107, 255, .15); }
+.ask-btns { display: flex; gap: 10px; justify-content: center; }
+.ask-btns .btn-main { padding: 12px 20px; font-size: 14px; }
