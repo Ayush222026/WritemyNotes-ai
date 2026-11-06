@@ -3,7 +3,7 @@
 
   /* ================= DEFAULT SETTINGS =================
      Units: A4 at 96 dpi = 794 x 1123.
-     Paper settings paper.js se aati hain. */
+     Paper settings paper.js se, pen settings pen.js se aati hain. */
   const DEFAULTS = {
     pageW: 794, pageH: 1123,
     paperColor: '#fffef9',
@@ -13,11 +13,25 @@
     top: 110, bottom: 60, left: 96, right: 44,
     lineSpacing: 34,
     fontFamily: '"Caveat","Kalam",cursive',
-    fontSize: 26, charSpacing: 0.4,
-    colors: { body: '#1d3fbb', heading: '#0b1f6b', sub: '#0b1f6b' },
-    opacity: 0.92, ink: 0.25,
+    fontSize: 26, fontScale: 1, charSpacing: 0.4,
+    multi: false,
+    colors: { body: '#1d3fbb', heading: '#1d3fbb', sub: '#1d3fbb', def: '#1d3fbb', warn: '#1d3fbb' },
+    opacity: 0.92, ink: 0.25, texture: 'ballpoint',
     imperfect: true, seed: 7
   };
+
+  /* Pen texture: aj = alpha variation, w = extra ink width,
+     dots = speckles per 100px, am = opacity multiplier */
+  const TEX = {
+    none:      { aj: 0,    w: 0,    dots: 0,  am: 1 },
+    ballpoint: { aj: 0.12, w: 0,    dots: 6,  am: 1 },
+    gel:       { aj: 0.04, w: 0.15, dots: 0,  am: 1.05 },
+    fountain:  { aj: 0.2,  w: 0.35, dots: 0,  am: 1 },
+    pencil:    { aj: 0.22, w: 0,    dots: 34, am: 0.82 }
+  };
+
+  const DEF_RE = /^(definition|def\.?|important|key point|formula|meaning|परिभाषा|महत्वपूर्ण)\s*[:\-–—]/i;
+  const WARN_RE = /^(warning|caution|danger|note|careful|सावधान|चेतावनी|ध्यान दें)\s*[:\-–—]/i;
 
   function merge(over) {
     const s = Object.assign({}, DEFAULTS, over || {});
@@ -25,7 +39,7 @@
     return s;
   }
 
-  /* Seeded random: same text = same look */
+  /* Seeded random: same text = same look (preview aur PDF match karenge) */
   function mulberry32(a) {
     return function () {
       let t = a += 0x6D2B79F5;
@@ -135,15 +149,23 @@
     return pages;
   }
 
+  function bodyRole(b, s) {
+    if (!s.multi) return 'body';
+    if (DEF_RE.test(b.text)) return 'def';
+    if (WARN_RE.test(b.text)) return 'warn';
+    return 'body';
+  }
+
   function layout(blocks, s) {
     const textW = s.pageW - s.left - s.right;
+    const base = s.fontSize * (s.fontScale || 1);
     const lines = [];
     for (const b of blocks) {
       if (b.type === 'space') { lines.push({ type: 'space' }); continue; }
-      let size = s.fontSize, role = 'body', indent = 0, marker = null;
+      let size = Math.round(base), role = bodyRole(b, s), indent = 0, marker = null;
       let underline = false, keep = false;
-      if (b.type === 'heading') { size = Math.round(s.fontSize * 1.3); role = 'heading'; underline = true; keep = true; }
-      else if (b.type === 'subheading') { size = Math.round(s.fontSize * 1.12); role = 'sub'; keep = true; }
+      if (b.type === 'heading') { size = Math.round(base * 1.3); role = 'heading'; underline = true; keep = true; }
+      else if (b.type === 'subheading') { size = Math.round(base * 1.12); role = 'sub'; keep = true; }
       else if (b.type === 'number') { indent = 42; marker = b.num + '.'; }
       else if (b.type === 'bullet') { indent = 34; marker = '•'; }
 
@@ -161,6 +183,9 @@
 
   /* ================= DRAWING ================= */
   function putText(ctx, str, startX, y, size, color, s, rand, slope) {
+    const T = TEX[s.texture] || TEX.ballpoint;
+    const baseA = Math.min(1, s.opacity * T.am);
+    const inkW = Math.max(0, s.ink + T.w);
     const font = size + 'px ' + s.fontFamily;
     ctx.font = font;
     ctx.fillStyle = color;
@@ -175,7 +200,7 @@
       const jy = wob ? (rand() - 0.5) * 2.0 : 0;
       const rot = wob ? (rand() - 0.5) * 0.05 : 0;
       const sc = wob ? 1 + (rand() - 0.5) * 0.06 : 1;
-      const alpha = s.imperfect ? s.opacity * (0.88 + rand() * 0.12) : s.opacity;
+      const alpha = s.imperfect ? Math.min(1, baseA * (1 - T.aj + rand() * T.aj)) : baseA;
 
       ctx.save();
       ctx.translate(x + jx, y + jy + (x - startX) * slope);
@@ -183,8 +208,8 @@
       ctx.scale(sc, sc);
       ctx.globalAlpha = alpha;
       ctx.fillText(c, 0, 0);
-      if (s.ink > 0) {
-        ctx.lineWidth = s.ink;
+      if (inkW > 0) {
+        ctx.lineWidth = inkW;
         ctx.lineJoin = 'round';
         ctx.strokeText(c, 0, 0);
       }
@@ -194,14 +219,32 @@
     return x;
   }
 
+  /* Pen texture: likhawat par halke chhote "daane" (paper ke colour ke) */
+  function speckle(ctx, startX, endX, baseY, size, s, rand) {
+    const T = TEX[s.texture] || TEX.ballpoint;
+    if (!T.dots || endX <= startX) return;
+    const n = Math.round((endX - startX) / 100 * T.dots);
+    ctx.save();
+    ctx.fillStyle = s.paperColor;
+    ctx.globalAlpha = 0.55;
+    for (let i = 0; i < n; i++) {
+      const x = startX + rand() * (endX - startX);
+      const y = baseY - rand() * size * 0.85;
+      ctx.fillRect(x, y, 0.9, 0.9);
+    }
+    ctx.restore();
+  }
+
   function drawLine(ctx, l, lineY, s, rand) {
+    const T = TEX[s.texture] || TEX.ballpoint;
     const color = s.colors[l.role] || s.colors.body;
     const slope = s.imperfect ? (rand() - 0.5) * 0.0016 : 0;
     const baseY = lineY - 5 + (s.imperfect ? (rand() - 0.5) * 1.6 : 0);
+    const dotAlpha = Math.min(1, s.opacity * T.am);
 
     if (l.marker === '•') {
       ctx.save();
-      ctx.globalAlpha = s.opacity;
+      ctx.globalAlpha = dotAlpha;
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(s.left + 14, baseY - l.size * 0.26, 3, 0, Math.PI * 2);
@@ -227,6 +270,8 @@
       ctx.stroke();
       ctx.restore();
     }
+
+    speckle(ctx, startX, endX, baseY, l.size, s, rand);
   }
 
   function drawSpiral(ctx, s) {
@@ -364,7 +409,6 @@
   const label = document.getElementById('pvLabel');
   const prev = document.getElementById('pvPrev');
   const next = document.getElementById('pvNext');
-  const imperfectBox = document.getElementById('pvImperfect');
   const E = window.WMN.engine;
   const state = { pages: [[]], settings: merge(), index: 0 };
   let busy = false, again = false, timer = null;
@@ -384,8 +428,8 @@
     try {
       if (!window.WMN.parseText) throw new Error('editor.js load nahi hua');
       const blocks = window.WMN.parseText(window.WMN.getText());
-      const paper = window.WMN.getSettings ? window.WMN.getSettings() : {};
-      const r = await E.renderAll(blocks, Object.assign({}, paper, { imperfect: imperfectBox.checked }));
+      const all = window.WMN.getSettings ? window.WMN.getSettings() : {};
+      const r = await E.renderAll(blocks, all);
       state.pages = r.pages;
       state.settings = r.settings;
       if (state.index >= state.pages.length) state.index = state.pages.length - 1;
@@ -405,7 +449,6 @@
   prev.addEventListener('click', () => { if (state.index > 0) { state.index--; show(); } });
   next.addEventListener('click', () => { if (state.index < state.pages.length - 1) { state.index++; show(); } });
   document.getElementById('pvRefresh').addEventListener('click', () => { refresh(); toast('Preview refresh ho gaya', 'success'); });
-  imperfectBox.addEventListener('change', refresh);
 
   const saveEl = document.getElementById('saveState');
   if (saveEl) {
