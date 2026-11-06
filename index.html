@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="editor.css">
   <link rel="stylesheet" href="engine.css">
+  <link rel="stylesheet" href="paper.css">
 </head>
 <body>
   <div class="app">
@@ -72,7 +73,7 @@
         </div>
 
         <div class="card">
-          <h3>🖼️ Handwriting Preview (Step 4 test)</h3>
+          <h3>🖼️ Handwriting Preview (test)</h3>
           <p class="muted">Ye abhi test preview hai. Poora live preview Step 7 mein banega.</p>
           <div class="pv-bar">
             <button class="btn" id="pvPrev" type="button">◀</button>
@@ -113,7 +114,83 @@
       </section>
 
       <section class="view" id="view-paper">
-        <div class="card"><h3>Paper Settings</h3><p class="muted">Paper templates Step 5 mein aayenge.</p></div>
+        <div class="card">
+          <h3>📄 Paper Chuno</h3>
+          <p class="muted">Koi bhi paper dabao. Selected paper par neela border aata hai.</p>
+          <div class="tpl-grid" id="tplGrid"></div>
+        </div>
+
+        <div class="card">
+          <h3>🎛️ Customize Paper</h3>
+          <p class="muted" id="pCurrent"></p>
+          <div class="paper-layout">
+            <div class="paper-big"><canvas id="pBig"></canvas></div>
+            <div class="paper-form">
+
+              <div class="frow">
+                <label for="pSize">Page size</label>
+                <select id="pSize">
+                  <option value="a4">A4 (210 × 297 mm)</option>
+                  <option value="a5">A5 (148 × 210 mm)</option>
+                  <option value="letter">Letter (8.5 × 11 in)</option>
+                  <option value="custom">Custom size</option>
+                </select>
+              </div>
+
+              <div class="frow" id="pCustomSize">
+                <label>Custom size (mm): width × height</label>
+                <div class="two">
+                  <input type="number" id="pW" min="100" max="420" step="1" inputmode="numeric">
+                  <span>×</span>
+                  <input type="number" id="pH" min="100" max="600" step="1" inputmode="numeric">
+                </div>
+              </div>
+
+              <div class="frow">
+                <label for="pColor">Paper colour / Page background</label>
+                <input type="color" id="pColor">
+              </div>
+
+              <div class="frow">
+                <label for="pLineStyle">Horizontal lines</label>
+                <select id="pLineStyle">
+                  <option value="none">No lines (Plain)</option>
+                  <option value="single">Single line</option>
+                  <option value="double">Double line</option>
+                </select>
+              </div>
+
+              <div class="frow">
+                <label for="pLineColor">Line colour</label>
+                <input type="color" id="pLineColor">
+              </div>
+
+              <label class="check"><input type="checkbox" id="pMargin"> Red margin line</label>
+              <label class="check"><input type="checkbox" id="pSpiral"> Spiral binding</label>
+
+              <div class="frow">
+                <label for="pTop">Top margin <span class="rv" id="pTopV"></span></label>
+                <input type="range" id="pTop" min="40" max="250" step="2">
+              </div>
+              <div class="frow">
+                <label for="pLeft">Left margin <span class="rv" id="pLeftV"></span></label>
+                <input type="range" id="pLeft" min="40" max="200" step="2">
+              </div>
+              <div class="frow">
+                <label for="pRight">Right margin <span class="rv" id="pRightV"></span></label>
+                <input type="range" id="pRight" min="20" max="150" step="2">
+              </div>
+              <div class="frow">
+                <label for="pSpacing">Line spacing <span class="rv" id="pSpacingV"></span></label>
+                <input type="range" id="pSpacing" min="24" max="60" step="1">
+              </div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="pReset" type="button">↩️ Reset Paper</button>
+            <button class="btn" type="button" data-go="editor">👀 Preview dekho</button>
+          </div>
+        </div>
       </section>
 
       <section class="view" id="view-help">
@@ -130,5 +207,6 @@
   <script src="script.js"></script>
   <script src="editor.js"></script>
   <script src="engine.js"></script>
+  <script src="paper.js"></script>
 </body>
 </html>
