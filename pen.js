@@ -21,7 +21,6 @@
     { name: 'Indie Flower', scale: 1 },
     { name: 'Homemade Apple', scale: 0.72 },
     { name: 'Schoolbell', scale: 1 }
-    { name: 'My Handwriting', family: "'My Handwriting'" }
   ];
 
   const PENS = [
