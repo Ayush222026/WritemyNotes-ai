@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="preview.css">
   <link rel="stylesheet" href="cover.css">
   <link rel="stylesheet" href="pdf.css">
+  <link rel="stylesheet" href="projects.css">
 </head>
 <body>
   <div class="app">
@@ -45,7 +46,7 @@
         <div class="hero card">
           <h2>Welcome to WriteMyNotes AI</h2>
           <p>Apna text paste karo, paper aur pen chuno, aur handwritten-style PDF download karo.</p>
-          <button class="btn-primary" data-go="editor">➕ Create New Assignment</button>
+          <button class="btn-primary" id="homeNew" type="button">➕ Create New Assignment</button>
         </div>
         <div class="grid">
           <div class="card tile" data-go="editor"><h3>📝 Text to Handwriting</h3><p>Text likho ya paste karo.</p></div>
@@ -56,11 +57,17 @@
         <div class="card">
           <h3>Recent Assignments</h3>
           <p class="muted" id="recentEmpty">Abhi koi assignment nahi hai. "Create New Assignment" dabao.</p>
+          <div class="recent-list" id="recentList"></div>
         </div>
       </section>
 
       <section class="view" id="view-editor">
         <div class="card">
+          <div class="proj-bar">
+            <span class="proj-cur">📁 <b id="projName">Assignment</b></span>
+            <button class="btn" id="projRename" type="button">✏️ Rename</button>
+            <span class="muted small" id="projSaved"></span>
+          </div>
           <h3>📝 Apna Text Likho</h3>
           <div class="toolbar">
             <button class="btn" id="btnSample" type="button">✨ Sample</button>
@@ -158,7 +165,25 @@
       </section>
 
       <section class="view" id="view-projects">
-        <div class="card"><h3>My Projects</h3><p class="muted">Saving system Step 10 mein banega.</p></div>
+        <div class="card">
+          <h3>📁 My Projects</h3>
+          <p class="muted">Har assignment apne aap save hoti hai: text, paper, pen aur cover sab. Ye sirf is phone ke browser mein save rehta hai.</p>
+          <div class="toolbar">
+            <button class="btn-main" id="projNew" type="button">➕ New Assignment</button>
+            <button class="btn" id="projImport" type="button">⬆️ Import</button>
+          </div>
+          <input type="file" id="projFile" accept=".json,application/json" hidden>
+          <div class="proj-list" id="projList"></div>
+        </div>
+
+        <div class="card">
+          <h3>🛠️ Settings</h3>
+          <p class="muted">Is project ki Paper aur Pen settings default par laao. Tumhara text aur cover safe rehte hain.</p>
+          <div class="toolbar">
+            <button class="btn btn-danger" id="projReset" type="button">↩️ Reset Paper + Pen settings</button>
+          </div>
+          <p class="muted small">Backup ke liye: kisi bhi project par ⬇️ Export dabao. Wo .json file tumhare Downloads mein aayegi.</p>
+        </div>
       </section>
 
       <section class="view" id="view-styles">
@@ -333,5 +358,6 @@
   <script src="preview.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="pdf.js"></script>
+  <script src="projects.js"></script>
 </body>
 </html>
