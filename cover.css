@@ -1,0 +1,15 @@
+#cvBody { display: none; margin-top: 8px; }
+#cvBody.open { display: block; }
+
+.cv-fields {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px; margin: 14px 0;
+}
+.cv-fields label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; }
+.cv-fields label.wide { grid-column: 1 / -1; }
+.cv-fields input {
+  padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font: inherit; font-size: 14px;
+  width: 100%; outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.cv-fields input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79, 107, 255, .15); }
