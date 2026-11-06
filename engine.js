@@ -2,13 +2,14 @@
   'use strict';
 
   /* ================= DEFAULT SETTINGS =================
-     Page size A4 at 96 dpi = 794 x 1123 units.
-     Aage ke steps mein ye settings paper/pen/font menu se badlengi. */
+     Units: A4 at 96 dpi = 794 x 1123.
+     Paper settings paper.js se aati hain. */
   const DEFAULTS = {
     pageW: 794, pageH: 1123,
     paperColor: '#fffef9',
-    lines: true, lineColor: '#b8c7e8',
+    lineStyle: 'single', lineColor: '#b8c7e8', lineW: 1,
     marginLine: true, marginColor: '#e06666', marginX: 76,
+    spiral: false, topLine: false, thumb: false,
     top: 110, bottom: 60, left: 96, right: 44,
     lineSpacing: 34,
     fontFamily: '"Caveat","Kalam",cursive',
@@ -24,7 +25,7 @@
     return s;
   }
 
-  /* Seeded random: same text = same look (preview aur PDF match karenge) */
+  /* Seeded random: same text = same look */
   function mulberry32(a) {
     return function () {
       let t = a += 0x6D2B79F5;
@@ -89,7 +90,7 @@
       let ww = 0;
       for (const c of cl) ww += cw(c, font) + sp;
 
-      if (ww > maxW) {                       // bahut lamba word: todo
+      if (ww > maxW) {
         if (cur.length) pushLine();
         let part = '', pw = 0;
         for (const c of cl) {
@@ -110,7 +111,7 @@
 
   /* ================= LAYOUT + PAGES ================= */
   function linesPerPage(s) {
-    return Math.floor((s.pageH - s.bottom - s.top) / s.lineSpacing) + 1;
+    return Math.max(1, Math.floor((s.pageH - s.bottom - s.top) / s.lineSpacing) + 1);
   }
 
   function paginate(lines, s) {
@@ -126,7 +127,6 @@
         nextPage();
         if (l.type === 'space') continue;
       }
-      // heading page ke aakhri line par akeli na rahe
       if (l.keep && cur.length === cap - 1 && i < lines.length - 1) nextPage();
       cur.push(l);
     }
@@ -170,7 +170,6 @@
       if (c === ' ') { x += spaceW(font, size, s); continue; }
       const w = cw(c, font);
       const deva = DEVA.test(c);
-      // Hindi mein rotation nahi (shirorekha line na toote)
       const wob = s.imperfect && !deva;
       const jx = wob ? (rand() - 0.5) * 1.0 : 0;
       const jy = wob ? (rand() - 0.5) * 2.0 : 0;
@@ -230,34 +229,93 @@
     }
   }
 
-  function drawPage(canvas, lines, s, pageIndex, scale) {
-    scale = scale || 2;
-    canvas.width = Math.round(s.pageW * scale);
-    canvas.height = Math.round(s.pageH * scale);
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  function drawSpiral(ctx, s) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (let y = 32; y < s.pageH - 12; y += 38) {
+      ctx.fillStyle = '#aeb3c0';
+      ctx.beginPath();
+      ctx.arc(26, y, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#5f6675';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(8, y - 4);
+      ctx.lineTo(40, y + 3);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(10, y - 5.2);
+      ctx.lineTo(38, y + 1.2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
+  function drawPaper(ctx, s) {
+    const lw = s.lineW || 1;
     ctx.fillStyle = s.paperColor;
     ctx.fillRect(0, 0, s.pageW, s.pageH);
 
-    if (s.lines) {
+    const x0 = s.spiral ? 46 : 0;
+
+    if (s.lineStyle !== 'none') {
       ctx.strokeStyle = s.lineColor;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = lw;
       ctx.beginPath();
       for (let y = s.top; y <= s.pageH - s.bottom + 0.5; y += s.lineSpacing) {
-        ctx.moveTo(0, y + 0.5);
+        ctx.moveTo(x0, y + 0.5);
         ctx.lineTo(s.pageW, y + 0.5);
       }
       ctx.stroke();
+
+      if (s.lineStyle === 'double') {
+        ctx.save();
+        ctx.globalAlpha = 0.65;
+        ctx.beginPath();
+        const gap = Math.round(s.lineSpacing * 0.5);
+        for (let y = s.top; y <= s.pageH - s.bottom + 0.5; y += s.lineSpacing) {
+          const y2 = y - gap;
+          if (y2 > 2) { ctx.moveTo(x0, y2 + 0.5); ctx.lineTo(s.pageW, y2 + 0.5); }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
     }
+
+    if (s.topLine) {
+      const ty = s.top - s.lineSpacing;
+      if (ty > 4) {
+        ctx.strokeStyle = s.marginColor;
+        ctx.lineWidth = lw * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x0, ty + 0.5);
+        ctx.lineTo(s.pageW, ty + 0.5);
+        ctx.stroke();
+      }
+    }
+
     if (s.marginLine) {
       ctx.strokeStyle = s.marginColor;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = lw * 1.5;
       ctx.beginPath();
       ctx.moveTo(s.marginX, 0);
       ctx.lineTo(s.marginX, s.pageH);
       ctx.stroke();
     }
+
+    if (s.spiral) drawSpiral(ctx, s);
+  }
+
+  function drawPage(canvas, lines, s, pageIndex, scale) {
+    scale = scale || 2;
+    canvas.width = Math.max(1, Math.round(s.pageW * scale));
+    canvas.height = Math.max(1, Math.round(s.pageH * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+
+    drawPaper(ctx, s);
 
     const rand = mulberry32(s.seed + pageIndex * 9973);
     ctx.textBaseline = 'alphabetic';
@@ -265,6 +323,26 @@
       if (l.type === 'space') return;
       drawLine(ctx, l, s.top + i * s.lineSpacing, s, rand);
     });
+
+    /* Thumbnail ke liye nakli "likhawat" ki patti */
+    if (s.thumb) {
+      ctx.save();
+      ctx.strokeStyle = '#4f6bff';
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = (s.lineW || 1) * 2.6;
+      ctx.lineCap = 'round';
+      const rows = Math.min(7, Math.floor((s.pageH - s.top - s.bottom) / s.lineSpacing));
+      const full = s.pageW - s.left - s.right;
+      for (let i = 0; i < rows; i++) {
+        const y = s.top + i * s.lineSpacing - 8;
+        const w = full * (i === 0 ? 0.45 : 0.55 + rand() * 0.45);
+        ctx.beginPath();
+        ctx.moveTo(s.left, y);
+        ctx.lineTo(s.left + w, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
 
   async function renderAll(blocks, over) {
@@ -279,7 +357,7 @@
     drawPage: drawPage, renderAll: renderAll, ensureFonts: ensureFonts
   };
 
-  /* ================= TEST PREVIEW (Step 4) =================
+  /* ================= TEST PREVIEW =================
      Step 7 mein ye poore live preview se replace hoga. */
   const canvas = document.getElementById('pvCanvas');
   if (!canvas) return;
@@ -294,6 +372,7 @@
   function show() {
     const i = state.index;
     drawPage(canvas, state.pages[i], state.settings, i, 2);
+    canvas.style.maxWidth = Math.round(state.settings.pageW * 0.7) + 'px';
     label.textContent = 'Page ' + (i + 1) + ' / ' + state.pages.length;
     prev.disabled = i <= 0;
     next.disabled = i >= state.pages.length - 1;
@@ -305,7 +384,8 @@
     try {
       if (!window.WMN.parseText) throw new Error('editor.js load nahi hua');
       const blocks = window.WMN.parseText(window.WMN.getText());
-      const r = await E.renderAll(blocks, { imperfect: imperfectBox.checked });
+      const paper = window.WMN.getSettings ? window.WMN.getSettings() : {};
+      const r = await E.renderAll(blocks, Object.assign({}, paper, { imperfect: imperfectBox.checked }));
       state.pages = r.pages;
       state.settings = r.settings;
       if (state.index >= state.pages.length) state.index = state.pages.length - 1;
@@ -320,12 +400,13 @@
 
   function later(ms) { clearTimeout(timer); timer = setTimeout(refresh, ms || 150); }
 
+  window.WMN.refreshPreview = function () { later(80); };
+
   prev.addEventListener('click', () => { if (state.index > 0) { state.index--; show(); } });
   next.addEventListener('click', () => { if (state.index < state.pages.length - 1) { state.index++; show(); } });
   document.getElementById('pvRefresh').addEventListener('click', () => { refresh(); toast('Preview refresh ho gaya', 'success'); });
   imperfectBox.addEventListener('change', refresh);
 
-  // Editor jab text save karta hai ("✓ Saved"), preview apne aap update hota hai
   const saveEl = document.getElementById('saveState');
   if (saveEl) {
     new MutationObserver(() => {
