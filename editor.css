@@ -1,0 +1,38 @@
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.btn {
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  padding: 10px 14px; border-radius: 12px; font: inherit; font-size: 13px;
+  cursor: pointer; transition: all .2s;
+}
+.btn:hover { border-color: var(--blue); transform: translateY(-1px); }
+.btn-danger:hover { border-color: #ef4444; color: #ef4444; }
+
+#textInput {
+  width: 100%; min-height: 280px; resize: vertical; padding: 14px;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: var(--bg); color: var(--text);
+  font: inherit; font-size: 16px; line-height: 1.6; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+#textInput:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(79, 107, 255, .15); }
+
+.counts { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; font-size: 13px; font-weight: 500; }
+.counts .muted { margin-left: auto; font-weight: 400; }
+
+.structure { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.sline { display: flex; gap: 10px; align-items: baseline; font-size: 14px; line-height: 1.5; }
+.sbadge {
+  flex-shrink: 0; min-width: 30px; text-align: center; font-size: 11px; font-weight: 600;
+  padding: 2px 6px; border-radius: 8px; background: var(--bg); color: var(--muted);
+  border: 1px solid var(--border);
+}
+.sline.heading .sbadge { background: var(--blue); color: #fff; border-color: var(--blue); }
+.sline.subheading .sbadge { background: var(--purple); color: #fff; border-color: var(--purple); }
+.sline.heading .stext { font-weight: 700; font-size: 16px; }
+.sline.subheading .stext { font-weight: 600; }
+.sline.space { height: 6px; }
+.smore { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.sempty { font-size: 14px; color: var(--muted); }
+
+.rules { padding-left: 20px; font-size: 14px; line-height: 1.9; }
+.rules code { background: var(--bg); border: 1px solid var(--border); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
