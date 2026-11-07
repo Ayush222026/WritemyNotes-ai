@@ -76,42 +76,35 @@ window.addEventListener('unhandledrejection', function (e) {
   showErr('Error: ' + ((r && r.message) || r || 'unknown'));
 });
 
-/* ---------- Jaanch: nayi files poori hain ya nahi, aur kya load hua ---------- */
+/* ---------- Jaanch: har file poori hai ya nahi ---------- */
 window.addEventListener('load', function () {
-  const need = [
-    ['smart.js', 'smartCard'],
-    ['pdfin.js', 'pdfInCard'],
-    ['images.js', 'imgCard']
-  ];
-  if (!need.some(n => !document.getElementById(n[1]))) return;
+  const cards = ['smartCard', 'pdfInCard', 'imgCard'];
+  if (!cards.some(id => !document.getElementById(id))) return;
 
   setTimeout(async function () {
+    const files = ['editor.js', 'engine.js', 'paper.js', 'pen.js', 'cover.js', 'preview.js',
+      'pdf.js', 'projects.js', 'smart.js', 'pdfin.js', 'images.js'];
     const rep = [];
-    for (const n of need) {
+    for (const f of files) {
       try {
-        const r = await fetch(n[0] + '?v=' + Date.now(), { cache: 'no-store' });
-        if (!r.ok) { rep.push(n[0] + ': NAHI MILI (status ' + r.status + ')'); continue; }
+        const r = await fetch(f + '?v=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) { rep.push(f + ': NAHI MILI (' + r.status + ')'); continue; }
         const t = (await r.text()).trim();
-        const okEnd = /\}\)\(\);?$/.test(t);
-        const has = !!document.getElementById(n[1]);
-        let s = n[0] + ': ' + t.length + ' characters, ';
-        if (t.length < 300) s += 'KHAALI YA BAHUT CHHOTI';
-        else s += okEnd ? 'poori hai' : 'ADHOORI (end kata hua)';
-        s += has ? ', card bana hua hai' : ', card NAHI bana';
-        if (!okEnd && t.length >= 300) s += '\n   end: ...' + t.slice(-40).replace(/\n/g, ' ');
+        const ok = /\}\)\(\);?$/.test(t);
+        let s = f + ': ' + t.length + (ok ? ' ok' : ' ADHOORI');
+        if (f === 'engine.js') s += t.indexOf('imageLine') >= 0 ? ' (naya)' : ' (purana)';
+        if (f === 'editor.js') s += t.indexOf('window.WMN = {') >= 0 ? ' (WMN set)' : ' (WMN NAHI)';
         rep.push(s);
       } catch (e) {
-        rep.push(n[0] + ': jaanch nahi ho payi (' + (e && e.message) + ')');
+        rep.push(f + ': jaanch fail');
       }
     }
     const W = window.WMN || {};
     rep.push('');
-    rep.push('WMN: ' + (window.WMN ? 'haan' : 'NAHI'));
-    rep.push('parseText: ' + (typeof W.parseText));
-    rep.push('engine: ' + (typeof W.engine));
-    rep.push('getSettings: ' + (typeof W.getSettings));
-    rep.push('textInput: ' + (document.getElementById('textInput') ? 'haan' : 'NAHI'));
-    rep.push('structure: ' + (document.getElementById('structure') ? 'haan' : 'NAHI'));
-    alert('JAANCH REPORT\n\n' + rep.join('\n'));
+    rep.push('WMN keys: ' + Object.keys(W).join(', '));
+    rep.push('');
+    rep.push('Scripts: ' + Array.from(document.scripts)
+      .map(s => (s.src || 'inline').split('?')[0].split('/').pop()).join(' > '));
+    alert('JAANCH REPORT 2\n\n' + rep.join('\n'));
   }, 1500);
 });
