@@ -121,4 +121,55 @@ async function heal() {
     checks.forEach(c => { if (!c[1]()) showErr(c[0] + ' abhi bhi nahi chali'); });
   }, 900);
 }
-window.addEventListener('load', function () { setTimeout(heal, 700); });
+
+/* ---------- Preview ki jaanch + typing par refresh ---------- */
+function setupDoctor() {
+  const W = window.WMN;
+  const ta = $('#textInput');
+  const info = $('#pvxInfo');
+  if (!W || !ta || !info || $('#pvDoc')) return;
+  const doc = document.createElement('p');
+  doc.id = 'pvDoc';
+  doc.className = 'small';
+  doc.style.cssText = 'margin-top:6px;font-weight:600;word-break:break-word';
+  info.parentNode.appendChild(doc);
+
+  let timer = null, busy = false;
+  async function run() {
+    if (busy) return;
+    busy = true;
+    try {
+      const text = W.getText ? W.getText() : ta.value;
+      const blocks = W.parseText(text);
+      const r = await W.engine.renderAll(blocks, W.getSettings ? W.getSettings() : {});
+      let lines = 0;
+      r.pages.forEach(p => p.forEach(l => { if (l.type !== 'space') lines++; }));
+      let msg = '✓ Preview theek hai: ' + text.length + ' characters, ' + blocks.length + ' blocks, ' + r.pages.length + ' pages';
+      let color = '#16a34a';
+      if (!W.refreshPreview) { msg = '✗ preview.js chali hi nahi (Live Preview band hai)'; color = '#dc2626'; }
+      else if (text.trim() && !lines) { msg = '✗ Text hai par page par ek bhi line nahi bani'; color = '#dc2626'; }
+      doc.style.color = color;
+      doc.textContent = msg;
+    } catch (e) {
+      doc.style.color = '#dc2626';
+      doc.textContent = '✗ Preview error: ' + (e && e.message ? e.message : e);
+    }
+    busy = false;
+  }
+  ta.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      if (W.refreshPreview) W.refreshPreview();
+      run();
+    }, 450);
+  });
+  if (W.refreshPreview) W.refreshPreview();
+  setTimeout(run, 400);
+}
+
+window.addEventListener('load', function () {
+  setTimeout(async function () {
+    await heal();
+    setupDoctor();
+  }, 700);
+});
