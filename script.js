@@ -54,7 +54,7 @@ showView(load('wmn_view') || 'home');
 let errShown = 0;
 const errSeen = new Set();
 function showErr(msg) {
-  if (errShown >= 5 || errSeen.has(msg)) return;
+  if (errShown >= 6 || errSeen.has(msg)) return;
   errSeen.add(msg);
   errShown++;
   toast(msg, 'error');
@@ -101,9 +101,19 @@ function loadJs(name) {
 }
 
 async function heal() {
-  const W = window.WMN;
-  if (!W) { showErr('WMN nahi bana: editor.js load nahi hui'); return; }
+  const W = window.WMN = window.WMN || {};
   const ta = $('#textInput');
+
+  /* 1. Sabse pehle: editor.js chali ya nahi */
+  if (typeof W.parseText !== 'function' || typeof W.getText !== 'function') {
+    const inHtml = Array.from(document.scripts).some(s => /editor\.js/.test(s.src || ''));
+    showErr(inHtml ? 'editor.js chali nahi, khud dobara chala raha hoon' : 'index.html mein editor.js ki line nahi hai, khud chala raha hoon');
+    await loadJs('editor.js');
+    if (typeof W.getText !== 'function' && ta) W.getText = () => ta.value;
+    if (typeof W.parseText !== 'function') W.parseText = basicParse;
+  }
+
+  /* 2. Baaki files jo chali nahi unhe dobara chalao */
   const checks = [
     ['preview.js', () => !!W.refreshPreview],
     ['pdf.js', () => !!W.pdf],
@@ -113,13 +123,12 @@ async function heal() {
     ['images.js', () => !!$('#imgCard')]
   ];
   const missing = checks.filter(c => !c[1]());
-  if (!missing.length) return;
-  if (typeof W.getText !== 'function' && ta) W.getText = () => ta.value;
-  if (typeof W.parseText !== 'function') W.parseText = basicParse;
   for (const m of missing) await loadJs(m[0]);
-  setTimeout(function () {
-    checks.forEach(c => { if (!c[1]()) showErr(c[0] + ' abhi bhi nahi chali'); });
-  }, 900);
+  if (missing.length) {
+    setTimeout(function () {
+      checks.forEach(c => { if (!c[1]()) showErr(c[0] + ' abhi bhi nahi chali'); });
+    }, 900);
+  }
 }
 
 /* ---------- Preview ki jaanch + typing par refresh ---------- */
