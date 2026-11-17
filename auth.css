@@ -1,3 +1,29 @@
-#authOv .pdf-box { max-width: 380px; text-align: left; }
-#authOv h3 { margin-bottom: 4px; }
-#authOv .ask-in { margin: 10px 0 6px; }
+.auth-gate {
+  position: fixed; inset: 0; z-index: 5000;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.auth-gate-box {
+  width: 100%; max-width: 380px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px 24px; box-shadow: var(--shadow);
+  text-align: center;
+}
+.auth-logo { font-size: 44px; margin-bottom: 8px; }
+.auth-gate-box h2 { margin-bottom: 8px; font-size: 20px; }
+.auth-gate-box p { margin-bottom: 14px; font-size: 14px; line-height: 1.5; }
+.auth-gate-box .ask-in { width: 100%; margin-bottom: 10px; }
+.auth-loading { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.auth-loading .pdf-spin { margin: 0; }
+
+.auth-chip {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border); background: var(--card);
+  border-radius: 20px; padding: 6px 6px 6px 12px;
+  font-size: 12px; font-weight: 600; cursor: default; white-space: nowrap;
+}
+.auth-chip button {
+  border: none; background: var(--bg); color: var(--text);
+  border-radius: 14px; padding: 6px 10px; font: inherit; font-size: 11px; cursor: pointer;
+}
