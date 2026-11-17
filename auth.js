@@ -23,58 +23,58 @@
     return b;
   }
 
-  /* ---------- Style ---------- */
-  const sty = document.createElement('style');
-  sty.textContent =
-    '.auth-chip{display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);' +
-    'border-radius:20px;padding:6px 6px 6px 12px;font-size:12px;font-weight:600;cursor:default;white-space:nowrap}' +
-    '.auth-chip button{border:none;background:var(--bg);color:var(--text);border-radius:14px;padding:6px 10px;' +
-    'font:inherit;font-size:11px;cursor:pointer}' +
-    '#authLoginBtn{border:1px solid var(--border);background:var(--grad);color:#fff;border-radius:20px;' +
-    'padding:9px 16px;font:inherit;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}';
-  document.head.appendChild(sty);
+  /* ---------- App ko shuru mein chhupa do ---------- */
+  const appEl = document.querySelector('.app');
+  if (appEl) appEl.style.display = 'none';
 
-  /* ---------- Topbar mein jagah banao ---------- */
-  const topbar = document.querySelector('.topbar');
-  const slot = mk('div');
-  slot.id = 'authSlot';
-  slot.style.cssText = 'display:flex;align-items:center;gap:8px;margin-left:auto';
-  if (topbar) {
-    const themeBtn = document.getElementById('themeBtn');
-    topbar.insertBefore(slot, themeBtn);
-  }
+  /* ---------- Gate screen (login se pehle poori screen) ---------- */
+  const gate = mk('div', 'auth-gate');
+  const gbox = mk('div', 'auth-gate-box');
 
-  /* ---------- Login modal (email box) ---------- */
-  const ov = mk('div', 'pdf-ov');
-  ov.id = 'authOv';
-  const bx = mk('div', 'pdf-box');
-  bx.appendChild(mk('h3', '', '🔑 Login / Signup'));
-  bx.appendChild(mk('p', 'muted small', 'Apna email daalo. Usme ek login link aayega, usi se sign in ho jaoge. Koi password nahi chahiye.'));
+  const loadingView = mk('div', 'auth-loading');
+  loadingView.appendChild(mk('div', 'pdf-spin'));
+  loadingView.appendChild(mk('p', 'muted', 'Check ho raha hai...'));
+
+  const loginView = mk('div', 'auth-login-view');
+  loginView.appendChild(mk('div', 'auth-logo', '✍️'));
+  loginView.appendChild(mk('h2', '', 'WriteMyNotes AI'));
+  loginView.appendChild(mk('p', 'muted', 'Apna email daalo. Usme ek login link aayega, usi se sign in ho jaoge. Koi password nahi chahiye.'));
   const emailIn = document.createElement('input');
   emailIn.type = 'email';
   emailIn.placeholder = 'tumhara@email.com';
   emailIn.className = 'ask-in';
   emailIn.autocomplete = 'email';
-  bx.appendChild(emailIn);
+  loginView.appendChild(emailIn);
   const msgEl = mk('p', 'muted small', '');
-  bx.appendChild(msgEl);
-  const btns = mk('div', 'ask-btns');
-  const sendB = btn('📧 Link bhejo', sendLink, 'btn-main');
-  const closeB = btn('Band karo', () => ov.classList.remove('show'));
-  btns.appendChild(sendB);
-  btns.appendChild(closeB);
-  bx.appendChild(btns);
-  ov.appendChild(bx);
-  document.body.appendChild(ov);
+  loginView.appendChild(msgEl);
+  const sendB = btn('📧 Login link bhejo', sendLink, 'btn-main');
+  sendB.style.width = '100%';
+  loginView.appendChild(sendB);
 
-  function openModal() {
-    emailIn.value = '';
-    msgEl.textContent = '';
-    sendB.disabled = false;
-    sendB.textContent = '📧 Link bhejo';
-    ov.classList.add('show');
-    setTimeout(() => emailIn.focus(), 60);
+  const sentView = mk('div', 'auth-login-view');
+  sentView.style.display = 'none';
+  sentView.appendChild(mk('div', 'auth-logo', '📧'));
+  sentView.appendChild(mk('h2', '', 'Email check karo'));
+  const sentMsg = mk('p', 'muted', '');
+  sentView.appendChild(sentMsg);
+  sentView.appendChild(mk('p', 'muted small', 'Spam / Promotions folder bhi dekh lena.'));
+  const backB = btn('↩️ Dusra email try karo', () => showStep('login'));
+  backB.style.width = '100%';
+  sentView.appendChild(backB);
+
+  gbox.appendChild(loadingView);
+  gbox.appendChild(loginView);
+  gbox.appendChild(sentView);
+  gate.appendChild(gbox);
+  document.body.appendChild(gate);
+
+  function showStep(name) {
+    loadingView.style.display = name === 'loading' ? 'block' : 'none';
+    loginView.style.display = name === 'login' ? 'block' : 'none';
+    sentView.style.display = name === 'sent' ? 'block' : 'none';
+    if (name === 'login') { msgEl.textContent = ''; setTimeout(() => emailIn.focus(), 60); }
   }
+  showStep('loading');
 
   async function sendLink() {
     const email = emailIn.value.trim();
@@ -88,33 +88,28 @@
         options: { emailRedirectTo: location.origin + location.pathname }
       });
       if (error) throw error;
-      msgEl.textContent = '✓ Link bhej diya. Apna email (aur Spam folder) check karo.';
-      sendB.textContent = '✓ Bhej diya';
+      sentMsg.textContent = '"' + email + '" par login link bhej diya hai.';
+      showStep('sent');
       toast('Login link email par bhej diya gaya', 'success');
     } catch (e) {
       console.error(e);
       msgEl.textContent = 'Error: ' + (e && e.message ? e.message : 'bhej nahi paaye');
-      sendB.disabled = false;
-      sendB.textContent = '📧 Link bhejo';
     }
+    sendB.disabled = false;
+    sendB.textContent = '📧 Login link bhejo';
   }
-
   emailIn.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendLink(); } });
 
-  /* ---------- Profile row banao / update karo ---------- */
-  async function touchProfile(user) {
-    try {
-      await sb.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        last_login: new Date().toISOString()
-      }, { onConflict: 'id' });
-    } catch (e) {
-      console.error(e);
-    }
+  /* ---------- Topbar mein chip (naam, admin badge, logout) ---------- */
+  const topbar = document.querySelector('.topbar');
+  const slot = mk('div');
+  slot.id = 'authSlot';
+  slot.style.cssText = 'display:flex;align-items:center;gap:8px;margin-left:auto';
+  if (topbar) {
+    const themeBtn = document.getElementById('themeBtn');
+    topbar.insertBefore(slot, themeBtn);
   }
 
-  /* ---------- Naam set/badal karo ---------- */
   async function setName(user) {
     const n = prompt('Apna naam likho:');
     if (n === null) return;
@@ -123,14 +118,29 @@
     try {
       await sb.from('profiles').upsert({ id: user.id, email: user.email, name: name }, { onConflict: 'id' });
       toast('Naam save ho gaya', 'success');
-      paint(user, name);
+      paintChip(user, name);
     } catch (e) {
       console.error(e);
       toast('Naam save nahi ho paya', 'error');
     }
   }
 
-  /* ---------- UI paint ---------- */
+  function paintChip(user, name) {
+    if (!slot) return;
+    slot.textContent = '';
+    const chip = mk('div', 'auth-chip');
+    chip.appendChild(mk('span', '', name || user.email));
+    if (user.email === ADMIN_EMAIL) chip.appendChild(mk('span', 'sm-ok', 'Admin'));
+    chip.appendChild(btn('Naam', () => setName(user)));
+    chip.appendChild(btn('Logout', async () => { await sb.auth.signOut(); }));
+    slot.appendChild(chip);
+  }
+
+  async function touchProfile(user) {
+    try {
+      await sb.from('profiles').upsert({ id: user.id, email: user.email, last_login: new Date().toISOString() }, { onConflict: 'id' });
+    } catch (e) { console.error(e); }
+  }
   async function getName(user) {
     try {
       const { data } = await sb.from('profiles').select('name').eq('id', user.id).single();
@@ -138,39 +148,30 @@
     } catch (e) { return ''; }
   }
 
-  function paint(user, name) {
-    if (!slot) return;
-    slot.textContent = '';
-    if (!user) {
-      slot.appendChild(btn('🔑 Login / Signup', openModal));
-      return;
-    }
-    const chip = mk('div', 'auth-chip');
-    const label = mk('span', '', (name || user.email));
-    chip.appendChild(label);
-    if (user.email === ADMIN_EMAIL) chip.appendChild(mk('span', 'sm-ok', 'Admin'));
-    chip.appendChild(btn('Naam', () => setName(user)));
-    chip.appendChild(btn('Logout', async () => {
-      await sb.auth.signOut();
-      toast('Logout ho gaye', 'success');
-    }));
-    slot.appendChild(chip);
+  /* ---------- Login/Logout par app ko dikhana/chhupana ---------- */
+  function showApp(user, name) {
+    gate.style.display = 'none';
+    if (appEl) appEl.style.display = '';
+    paintChip(user, name);
+  }
+  function showGate() {
+    if (appEl) appEl.style.display = 'none';
+    gate.style.display = 'flex';
+    showStep('login');
   }
 
-  /* ---------- Session ---------- */
   let last = null;
   sb.auth.onAuthStateChange(async (event, session) => {
     const user = session && session.user;
-    if (user && (!last || last.id !== user.id)) {
-      await touchProfile(user);
-    }
-    last = user || null;
     if (user) {
+      if (!last || last.id !== user.id) await touchProfile(user);
+      last = user;
       const name = await getName(user);
-      paint(user, name);
-      if (event === 'SIGNED_IN') { ov.classList.remove('show'); toast('Login ho gaye ✓', 'success'); }
+      showApp(user, name);
+      if (event === 'SIGNED_IN') toast('Login ho gaye ✓', 'success');
     } else {
-      paint(null);
+      last = null;
+      showGate();
     }
   });
 
@@ -181,9 +182,9 @@
       last = user;
       await touchProfile(user);
       const name = await getName(user);
-      paint(user, name);
+      showApp(user, name);
     } else {
-      paint(null);
+      showGate();
     }
   })();
 
