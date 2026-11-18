@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const W = window.WMN;
-  if (!W || !W.getText) { console.error('Pehle ki files load nahi hui'); return; }
+  if (!W || !W.getText) { console.error('Earlier files not loaded'); return; }
   const $id = id => document.getElementById(id);
   if (!$id('projList')) return;
 
@@ -10,11 +10,10 @@
 
   let projects = [];
   let current = '';
-  let switching = false;   // project badalte waqt auto-save band
+  let switching = false;
   let warned = false;
   let savedAt = null;
 
-  /* ---------- Helpers ---------- */
   function mk(tag, cls, txt) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -56,7 +55,6 @@
     return isObj(f) && Object.keys(f).some(k => typeof f[k] === 'string' && f[k].trim());
   }
 
-  /* ---------- Project data ---------- */
   function sanitizeProject(p) {
     if (!isObj(p)) return null;
     const now = Date.now();
@@ -74,7 +72,7 @@
     try {
       const a = JSON.parse(rawGet(KEY) || '[]');
       if (Array.isArray(a)) return a.map(sanitizeProject).filter(Boolean).slice(0, MAX_PROJECTS);
-    } catch (e) { /* khaali list */ }
+    } catch (e) { /* empty list */ }
     return [];
   }
 
@@ -86,7 +84,7 @@
     } catch (e) {
       if (!warned) {
         warned = true;
-        toast('Storage full hai. Kuch purane projects delete karo ya Export karke rakho', 'error');
+        toast('Storage is full. Delete some old projects or Export them first', 'error');
       }
       return false;
     }
@@ -95,7 +93,6 @@
   const find = id => projects.find(p => p.id === id);
   const recent = () => projects.slice().sort((a, b) => b.updated - a.updated);
 
-  /* Abhi browser mein jo chal raha hai (current project ki live state) */
   function snapshot() {
     return {
       text: W.getText(),
@@ -105,7 +102,6 @@
     };
   }
 
-  /* ---------- Auto-save ---------- */
   function syncNow() {
     if (switching) return;
     const cur = find(current);
@@ -120,7 +116,6 @@
     }
   }
 
-  /* ---------- Name dialog ---------- */
   const ov = mk('div', 'pdf-ov');
   ov.id = 'askOv';
   ov.setAttribute('role', 'dialog');
@@ -146,7 +141,7 @@
   }
   okB.addEventListener('click', () => {
     const v = cleanName(inp.value);
-    if (!v) { toast('Naam khaali nahi ho sakta', 'error'); return; }
+    if (!v) { toast('Name cannot be empty', 'error'); return; }
     closeAsk(v);
   });
   noB.addEventListener('click', () => closeAsk(null));
@@ -168,7 +163,6 @@
     });
   }
 
-  /* ---------- Open / switch ---------- */
   function writeState(p) {
     put('wmn_text', p.text);
     put('wmn_paper', p.paper ? JSON.stringify(p.paper) : '');
@@ -186,11 +180,10 @@
     rawSet(CUR, id);
     writeState(p);
     rawSet('wmn_view', 'editor');
-    rawSet('wmn_flash', flash || '"' + p.name + '" khul gaya');
+    rawSet('wmn_flash', flash || '"' + p.name + '" opened');
     location.reload();
   }
 
-  /* ---------- Actions ---------- */
   function addProject(name, data) {
     const now = Date.now();
     const rec = sanitizeProject({
@@ -203,29 +196,29 @@
   }
 
   async function newAssignment() {
-    if (projects.length >= MAX_PROJECTS) { toast('Maximum ' + MAX_PROJECTS + ' projects ho sakte hain. Kuch delete karo', 'error'); return; }
-    const name = await askName('Naye assignment ka naam', 'Assignment ' + (projects.length + 1), 'Create');
+    if (projects.length >= MAX_PROJECTS) { toast('You can have up to ' + MAX_PROJECTS + ' projects. Delete some first', 'error'); return; }
+    const name = await askName('Name your new assignment', 'Assignment ' + (projects.length + 1), 'Create');
     if (name === null) return;
     syncNow();
     const base = snapshot();
     const rec = addProject(name, { text: '', paper: base.paper, pen: base.pen, cover: null });
     if (!persist()) { projects = projects.filter(p => p.id !== rec.id); return; }
-    openProject(rec.id, '"' + rec.name + '" ban gaya. Ab text likho', true);
+    openProject(rec.id, '"' + rec.name + '" created. Start writing', true);
   }
 
   async function rename(id) {
     const p = find(id);
     if (!p) return;
-    const n = await askName('Naya naam', p.name, 'Save');
+    const n = await askName('New name', p.name, 'Save');
     if (n === null) return;
     p.name = n;
     persist();
     renderAll();
-    toast('Naam badal gaya', 'success');
+    toast('Name updated', 'success');
   }
 
   function duplicate(id) {
-    if (projects.length >= MAX_PROJECTS) { toast('Maximum ' + MAX_PROJECTS + ' projects ho sakte hain. Kuch delete karo', 'error'); return; }
+    if (projects.length >= MAX_PROJECTS) { toast('You can have up to ' + MAX_PROJECTS + ' projects. Delete some first', 'error'); return; }
     if (id === current) syncNow();
     const p = find(id);
     if (!p) return;
@@ -236,13 +229,13 @@
     projects.push(copy);
     if (!persist()) { projects.pop(); return; }
     renderAll();
-    toast('Duplicate ban gaya: ' + copy.name, 'success');
+    toast('Duplicate created: ' + copy.name, 'success');
   }
 
   function removeProject(id) {
     const p = find(id);
     if (!p) return;
-    if (!confirm('"' + p.name + '" delete kar dein? Ye wapas nahi aayegi.')) return;
+    if (!confirm('Delete "' + p.name + '"? This cannot be undone.')) return;
     const wasCur = id === current;
     if (!wasCur) syncNow();
     projects = projects.filter(x => x.id !== id);
@@ -250,11 +243,11 @@
       let next = recent()[0];
       if (!next) next = addProject('Assignment 1', {});
       if (!persist()) return;
-      openProject(next.id, 'Project delete ho gaya', true);
+      openProject(next.id, 'Project deleted', true);
     } else {
       persist();
       renderAll();
-      toast('Project delete ho gaya', 'success');
+      toast('Project deleted', 'success');
     }
   }
 
@@ -278,27 +271,26 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
-      toast('Export ho gaya (Downloads folder mein)', 'success');
+      toast('Exported (in your Downloads folder)', 'success');
     } catch (e) {
       console.error(e);
-      toast('Export nahi ho paya', 'error');
+      toast('Export failed', 'error');
     }
   }
 
-  /* ---------- Import ---------- */
   const fileIn = $id('projFile');
   $id('projImport').addEventListener('click', () => fileIn.click());
   fileIn.addEventListener('change', () => {
     const f = fileIn.files && fileIn.files[0];
     if (!f) return;
     if (!/\.json$/i.test(f.name) && f.type !== 'application/json') {
-      toast('Sirf .json file chuno', 'error'); fileIn.value = ''; return;
+      toast('Choose a .json file only', 'error'); fileIn.value = ''; return;
     }
     if (f.size > 3 * 1024 * 1024) {
-      toast('File 3MB se badi hai', 'error'); fileIn.value = ''; return;
+      toast('File is larger than 3MB', 'error'); fileIn.value = ''; return;
     }
     if (projects.length >= MAX_PROJECTS) {
-      toast('Maximum ' + MAX_PROJECTS + ' projects ho sakte hain. Kuch delete karo', 'error'); fileIn.value = ''; return;
+      toast('You can have up to ' + MAX_PROJECTS + ' projects. Delete some first', 'error'); fileIn.value = ''; return;
     }
     const r = new FileReader();
     r.onload = () => {
@@ -311,17 +303,16 @@
         projects.push(rec);
         if (!persist()) { projects.pop(); return; }
         renderAll();
-        toast('Import ho gaya: ' + rec.name + '. Open dabao', 'success');
+        toast('Imported: ' + rec.name + '. Tap Open', 'success');
       } catch (e) {
-        toast('Ye WriteMyNotes ki project file nahi lagti', 'error');
+        toast('This doesn\u2019t look like a WriteMyNotes project file', 'error');
       }
     };
-    r.onerror = () => toast('File padh nahi paaye', 'error');
+    r.onerror = () => toast('Could not read the file', 'error');
     r.readAsText(f, 'UTF-8');
     fileIn.value = '';
   });
 
-  /* ---------- Render ---------- */
   function updateBar() {
     const cur = find(current);
     if (cur) $id('projName').textContent = cur.name;
@@ -341,7 +332,7 @@
     const box = $id('projList');
     box.textContent = '';
     const list = recent();
-    if (!list.length) { box.appendChild(mk('p', 'proj-empty', 'Koi project nahi hai.')); return; }
+    if (!list.length) { box.appendChild(mk('p', 'proj-empty', 'No projects yet.')); return; }
     list.forEach(p => {
       const isCur = p.id === current;
       const c = mk('div', 'proj-card' + (isCur ? ' current' : ''));
@@ -353,7 +344,7 @@
       const sn = snippet(p.text);
       if (sn) c.appendChild(mk('div', 'proj-snip', sn));
       const b = mk('div', 'proj-btns');
-      b.appendChild(button(isCur ? '✍️ Likho' : '📂 Open', () => openProject(p.id)));
+      b.appendChild(button(isCur ? '✍️ Write' : '📂 Open', () => openProject(p.id)));
       b.appendChild(button('✏️ Rename', () => rename(p.id)));
       b.appendChild(button('📑 Duplicate', () => duplicate(p.id)));
       b.appendChild(button('⬇️ Export', () => exportProject(p.id)));
@@ -383,24 +374,22 @@
 
   function renderAll() { updateBar(); renderList(); renderRecent(); }
 
-  /* ---------- Buttons ---------- */
   $id('projNew').addEventListener('click', newAssignment);
   $id('homeNew').addEventListener('click', newAssignment);
   $id('projRename').addEventListener('click', () => rename(current));
 
   $id('projReset').addEventListener('click', () => {
-    if (!confirm('Is project ki Paper aur Pen settings default par aa jayengi. Text aur cover safe rahenge. Continue?')) return;
+    if (!confirm('This project\u2019s Paper and Pen settings will go back to default. Your text and cover stay safe. Continue?')) return;
     syncNow();
     switching = true;
     rawDel('wmn_paper');
     rawDel('wmn_pen');
     const cur = find(current);
     if (cur) { cur.paper = null; cur.pen = null; cur.updated = Date.now(); persist(); }
-    rawSet('wmn_flash', 'Paper aur Pen settings reset ho gayi');
+    rawSet('wmn_flash', 'Paper and Pen settings reset');
     location.reload();
   });
 
-  /* ---------- Start ---------- */
   projects = loadProjects();
   current = rawGet(CUR) || '';
 
