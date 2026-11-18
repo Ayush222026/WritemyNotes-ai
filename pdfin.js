@@ -3,7 +3,7 @@
   const W = window.WMN;
   const ta = document.getElementById('textInput');
   const textCard = ta ? ta.closest('.card') : null;
-  if (!W || !ta || !textCard) { console.error('Pehle ki files load nahi hui'); return; }
+  if (!W || !ta || !textCard) { console.error('Earlier files not loaded'); return; }
   if (document.getElementById('pdfInCard')) return;
 
   const LIB = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
@@ -24,7 +24,6 @@
   }
   const tick = () => new Promise(r => setTimeout(r, 20));
 
-  /* ---------- Options ---------- */
   const opt = { hf: true, hy: true, img: true };
   try {
     const o = JSON.parse(load('wmn_pdfin') || 'null');
@@ -34,11 +33,10 @@
   } catch (e) { /* default */ }
   function saveOpt() { store('wmn_pdfin', JSON.stringify(opt)); }
 
-  /* ---------- Card ---------- */
   const card = mk('div', 'card');
   card.id = 'pdfInCard';
-  card.appendChild(mk('h3', '', '📄 PDF se text aur images'));
-  card.appendChild(mk('p', 'muted', 'PDF chuno. App uska text aur images nikal ke text box mein daal dega. Bade font wali lines heading ban jaati hain, baaki Smart Detect pehchanta hai.'));
+  card.appendChild(mk('h3', '', '📄 Import from PDF'));
+  card.appendChild(mk('p', 'muted', 'Choose a PDF. The app will pull its text and images into the box above. Lines in a larger font become headings; the rest is handled by Smart Detect.'));
 
   function check(label, key) {
     const l = mk('label', 'check');
@@ -50,9 +48,9 @@
     l.appendChild(document.createTextNode(' ' + label));
     card.appendChild(l);
   }
-  check('PDF ki images bhi lo (photos, diagrams)', 'img');
-  check('Header, footer aur page numbers hatao', 'hf');
-  check('Line ke end mein toote shabd jodo (jaise "infor-" + "mation")', 'hy');
+  check('Also take images from the PDF (photos, diagrams)', 'img');
+  check('Remove headers, footers and page numbers', 'hf');
+  check('Join words broken across line ends (e.g. "infor-" + "mation")', 'hy');
 
   const fileIn = document.createElement('input');
   fileIn.type = 'file';
@@ -60,13 +58,12 @@
   fileIn.hidden = true;
   card.appendChild(fileIn);
   const tb = mk('div', 'toolbar');
-  tb.appendChild(btn('📄 PDF chuno', () => fileIn.click(), 'btn-main'));
+  tb.appendChild(btn('📄 Choose PDF', () => fileIn.click(), 'btn-main'));
   card.appendChild(tb);
   const status = mk('p', 'muted small', '');
   card.appendChild(status);
   textCard.parentNode.insertBefore(card, textCard.nextSibling);
 
-  /* ---------- Progress aur choice boxes ---------- */
   let cancelled = false, busy = false;
 
   const ov = mk('div', 'pdf-ov');
@@ -78,7 +75,7 @@
   bx.appendChild(mk('div', 'pdf-spin'));
   bx.appendChild(ovTxt);
   bx.appendChild(bar);
-  bx.appendChild(btn('✖ Cancel', () => { cancelled = true; ovTxt.textContent = 'Cancel ho raha hai...'; }));
+  bx.appendChild(btn('✖ Cancel', () => { cancelled = true; ovTxt.textContent = 'Cancelling...'; }));
   ov.appendChild(bx);
   document.body.appendChild(ov);
   function showProg(t, p) { ovTxt.textContent = t; barIn.style.width = p + '%'; ov.classList.add('show'); }
@@ -89,8 +86,8 @@
   const cTxt = mk('p', 'pdf-txt', '');
   const cBtns = mk('div');
   cBtns.style.cssText = 'display:flex;flex-direction:column;gap:10px;margin-top:12px';
-  const bRep = btn('🔄 Purane text ki jagah', () => {}, 'btn-main');
-  const bAdd = btn('➕ Purane ke neeche jodo', () => {});
+  const bRep = btn('🔄 Replace my current text', () => {}, 'btn-main');
+  const bAdd = btn('➕ Add below my current text', () => {});
   const bNo = btn('Cancel', () => {});
   cBtns.appendChild(bRep); cBtns.appendChild(bAdd); cBtns.appendChild(bNo);
   cbx.appendChild(cTxt); cbx.appendChild(cBtns);
@@ -107,7 +104,6 @@
     });
   }
 
-  /* ---------- Libraries aur chhote modules load karo ---------- */
   function getLib() {
     return new Promise((resolve, reject) => {
       function ready() {
@@ -135,9 +131,8 @@
     });
   }
 
-  /* ---------- Extract ---------- */
   async function extract(file) {
-    showProg('PDF library load ho rahi hai...', 3);
+    showProg('Loading PDF library...', 3);
     const lib = await getLib();
     const P = await needMod('pdfparse.js', 'pdfParse');
     let IM = null, imgWarn = false;
@@ -149,7 +144,7 @@
     }
     if (cancelled) throw new Error('CANCELLED');
 
-    showProg('PDF khul rahi hai...', 8);
+    showProg('Opening the PDF...', 8);
     const buf = new Uint8Array(await file.arrayBuffer());
     const pdf = await lib.getDocument({ data: buf }).promise;
     const total = pdf.numPages;
@@ -160,7 +155,7 @@
     try {
       for (let p = 1; p <= n; p++) {
         if (cancelled) throw new Error('CANCELLED');
-        showProg('Page ' + p + ' / ' + n + ' padh raha hoon...', Math.round(10 + 70 * p / n));
+        showProg('Reading page ' + p + ' / ' + n + '...', Math.round(10 + 70 * p / n));
         const page = await pdf.getPage(p);
         const tc = await page.getTextContent();
         const vp = page.getViewport({ scale: 1 });
@@ -173,7 +168,7 @@
         if (p % 5 === 0) await tick();
       }
 
-      showProg('Text taiyaar ho raha hai...', 82);
+      showProg('Preparing the text...', 82);
       await tick();
       prep = P.prep(pages, opt);
       if (prep.empty) return { empty: true };
@@ -198,13 +193,12 @@
     };
   }
 
-  /* ---------- Text box mein daalo ---------- */
   async function place(r, name) {
     let t = r.text;
     let mode = 'replace';
     if (ta.value.trim()) {
-      mode = await choose('Text box mein pehle se text hai. PDF ka text kahan daalein?');
-      if (!mode) { toast('PDF ka text nahi daala gaya'); return; }
+      mode = await choose('There is already text in the box. Where should the PDF text go?');
+      if (!mode) { toast('PDF text was not added'); return; }
     }
     if (mode === 'add') t = ta.value.replace(/\s+$/, '') + '\n\n' + t;
     let cutDone = false;
@@ -212,35 +206,35 @@
     ta.value = t;
     ta.dispatchEvent(new Event('input', { bubbles: true }));
     status.textContent = 'Last PDF: ' + name + '  •  ' + r.pages + ' pages  •  ' + r.words + ' words  •  ' + r.heads + ' headings  •  ' + r.images + ' images';
-    toast('PDF aa gayi (' + r.words + ' words, ' + r.heads + ' headings, ' + r.images + ' images)', 'success');
-    if (r.total > r.pages) toast('Sirf pehle ' + r.pages + ' pages liye gaye', 'info');
-    if (r.imgFull) toast('Images ki limit poori ho gayi, baaki images chhod di', 'error');
-    if (r.imgWarn) toast('Images nahi li gayi (images.js ya pdfimg.js nahi chali)', 'error');
-    if (cutDone) toast('Text bahut bada tha, ' + MAX_CHARS + ' characters tak hi liya', 'error');
+    toast('PDF imported (' + r.words + ' words, ' + r.heads + ' headings, ' + r.images + ' images)', 'success');
+    if (r.total > r.pages) toast('Only the first ' + r.pages + ' pages were used', 'info');
+    if (r.imgFull) toast('Image limit reached, remaining images were skipped', 'error');
+    if (r.imgWarn) toast('Images were not imported (images.js or pdfimg.js did not run)', 'error');
+    if (cutDone) toast('Text was too large, only the first ' + MAX_CHARS + ' characters were used', 'error');
   }
 
   function fail(e) {
     const m = (e && e.message) || '', n = e && e.name;
-    if (m === 'CANCELLED') toast('PDF cancel ho gayi');
-    else if (m === 'NOLIB') toast('PDF library load nahi hui. Internet check karo', 'error');
-    else if (m.indexOf('MODMISS:') === 0) toast('File nahi mili: ' + m.slice(8) + ' (repo mein banao)', 'error');
-    else if (m.indexOf('MODBAD:') === 0) toast('File adhoori hai: ' + m.slice(7) + ' (dobara paste karo)', 'error');
-    else if (n === 'PasswordException') toast('Ye PDF password se locked hai', 'error');
-    else if (n === 'InvalidPDFException') toast('Ye valid PDF file nahi lagti', 'error');
-    else { console.error(e); toast('PDF padhne mein error aaya. Dusri PDF try karo', 'error'); }
+    if (m === 'CANCELLED') toast('PDF import cancelled');
+    else if (m === 'NOLIB') toast('PDF library could not load. Check your internet', 'error');
+    else if (m.indexOf('MODMISS:') === 0) toast('File not found: ' + m.slice(8) + ' (add it to the repo)', 'error');
+    else if (m.indexOf('MODBAD:') === 0) toast('File is incomplete: ' + m.slice(7) + ' (paste it again)', 'error');
+    else if (n === 'PasswordException') toast('This PDF is password-protected', 'error');
+    else if (n === 'InvalidPDFException') toast('This does not look like a valid PDF file', 'error');
+    else { console.error(e); toast('Something went wrong reading the PDF. Try another file', 'error'); }
   }
 
   async function run(file) {
     if (busy) return;
-    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Sirf PDF file chuno', 'error'); return; }
-    if (file.size > MAX_MB * 1024 * 1024) { toast('PDF ' + MAX_MB + 'MB se badi hai', 'error'); return; }
+    if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Choose a PDF file only', 'error'); return; }
+    if (file.size > MAX_MB * 1024 * 1024) { toast('PDF is larger than ' + MAX_MB + 'MB', 'error'); return; }
     busy = true;
     cancelled = false;
     try {
       const r = await extract(file);
       hideProg();
       if (r.empty) {
-        alert('Is PDF mein text nahi mila. Shayad ye scan ya photo wali PDF hai (har page ek image hai). Abhi OCR support nahi hai.');
+        alert('No text was found in this PDF. It might be a scanned/photo PDF (every page is an image). Text recognition (OCR) is not supported yet.');
       } else {
         await place(r, file.name);
       }
