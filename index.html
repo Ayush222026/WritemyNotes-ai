@@ -49,18 +49,18 @@
       <section class="view active" id="view-home">
         <div class="hero card">
           <h2>Welcome to WriteMyNotes AI</h2>
-          <p>Apna text paste karo, paper aur pen chuno, aur handwritten-style PDF download karo.</p>
+          <p>Paste your text, choose a paper and pen, and download a handwritten-style PDF.</p>
           <button class="btn-primary" id="homeNew" type="button">➕ Create New Assignment</button>
         </div>
         <div class="grid">
-          <div class="card tile" data-go="editor"><h3>📝 Text to Handwriting</h3><p>Text likho ya paste karo.</p></div>
-          <div class="card tile" data-go="projects"><h3>📁 My Projects</h3><p>Saved assignments dekho.</p></div>
-          <div class="card tile" data-go="styles"><h3>🔤 Handwriting Styles</h3><p>Fonts aur pen colours.</p></div>
+          <div class="card tile" data-go="editor"><h3>📝 Text to Handwriting</h3><p>Write or paste your text.</p></div>
+          <div class="card tile" data-go="projects"><h3>📁 My Projects</h3><p>View your saved assignments.</p></div>
+          <div class="card tile" data-go="styles"><h3>🔤 Handwriting Styles</h3><p>Fonts and pen colours.</p></div>
           <div class="card tile" data-go="paper"><h3>📄 Paper Settings</h3><p>Ruled, plain, notebook.</p></div>
         </div>
         <div class="card">
           <h3>Recent Assignments</h3>
-          <p class="muted" id="recentEmpty">Abhi koi assignment nahi hai. "Create New Assignment" dabao.</p>
+          <p class="muted" id="recentEmpty">No assignments yet. Tap "Create New Assignment".</p>
           <div class="recent-list" id="recentList"></div>
         </div>
       </section>
@@ -72,14 +72,14 @@
             <button class="btn" id="projRename" type="button">✏️ Rename</button>
             <span class="muted small" id="projSaved"></span>
           </div>
-          <h3>📝 Apna Text Likho</h3>
+          <h3>📝 Write Your Text</h3>
           <div class="toolbar">
             <button class="btn" id="btnSample" type="button">✨ Sample</button>
             <button class="btn" id="btnUpload" type="button">📂 TXT Upload</button>
             <button class="btn btn-danger" id="btnClear" type="button">🗑️ Clear All</button>
           </div>
           <input type="file" id="fileInput" accept=".txt,text/plain" hidden>
-          <textarea id="textInput" spellcheck="false" placeholder="Yahan apna assignment text paste ya type karo (English ya Hindi)..."></textarea>
+          <textarea id="textInput" spellcheck="false" placeholder="Paste or type your assignment text here (English or Hindi)..."></textarea>
           <div class="counts">
             <span id="wordCount">0 words</span>
             <span id="charCount">0 characters</span>
@@ -89,15 +89,15 @@
 
         <div class="card" id="cvCard">
           <h3>📘 Cover Page</h3>
-          <label class="check"><input type="checkbox" id="cvOn"> Cover page add karo (assignment ke pehle page par)</label>
+          <label class="check"><input type="checkbox" id="cvOn"> Add a cover page (as the first page of the assignment)</label>
           <div id="cvBody">
-            <p class="muted">Template chuno:</p>
+            <p class="muted">Choose a template:</p>
             <div class="tpl-grid" id="cvTpls"></div>
             <div class="cv-fields" id="cvFields"></div>
             <div class="toolbar">
-              <button class="btn" id="cvToday" type="button">📅 Aaj ki date</button>
-              <button class="btn btn-danger" id="cvClear" type="button">🗑️ Cover details clear</button>
-              <button class="btn" id="cvSee" type="button">👀 Preview dekho</button>
+              <button class="btn" id="cvToday" type="button">📅 Today's date</button>
+              <button class="btn btn-danger" id="cvClear" type="button">🗑️ Clear cover details</button>
+              <button class="btn" id="cvSee" type="button">👀 View preview</button>
             </div>
           </div>
         </div>
@@ -113,7 +113,7 @@
           <div class="pvx-bar">
             <div class="pvx-group">
               <button class="btn" id="pvxPrev" type="button" aria-label="Previous page">◀</button>
-              <select id="pvxPage" aria-label="Page chuno"></select>
+              <select id="pvxPage" aria-label="Choose page"></select>
               <button class="btn" id="pvxNext" type="button" aria-label="Next page">▶</button>
             </div>
             <div class="pvx-group">
@@ -130,12 +130,12 @@
         </div>
 
         <div class="card" id="pdfCard">
-          <h3>📥 PDF Banao</h3>
-          <p class="muted">Cover page (agar on hai) aur saare pages ek PDF mein jaate hain. PDF preview jaisi hi dikhti hai.</p>
+          <h3>📥 Create PDF</h3>
+          <p class="muted">The cover page (if turned on) and all pages go into one PDF. The PDF looks just like the preview.</p>
           <div class="frow">
             <label for="pdfQ">PDF quality</label>
             <select id="pdfQ">
-              <option value="2">Standard (192 dpi, chhoti file)</option>
+              <option value="2">Standard (192 dpi, smaller file)</option>
               <option value="3">High (288 dpi, best print)</option>
             </select>
           </div>
@@ -149,7 +149,7 @@
 
         <div class="card">
           <h3>🔎 Auto-Format Preview</h3>
-          <p class="muted">Yahan dikhta hai ki tumhara text kaise samjha gaya. Wording bilkul same rehti hai.</p>
+          <p class="muted">This shows how your text was understood. Your wording stays exactly the same.</p>
           <div id="structure" class="structure"></div>
         </div>
 
@@ -159,11 +159,11 @@
             <li><code># Title</code> = Heading</li>
             <li><code>## Title</code> = Subheading</li>
             <li><code>1. text</code> = Numbered list</li>
-            <li><code>- text</code> ya <code>* text</code> = Bullet point</li>
-            <li>Chhoti ALL CAPS line = Heading (apne aap)</li>
-            <li>Chhoti line jo <code>:</code> par khatam ho = Subheading (apne aap)</li>
-            <li>Khaali line = Paragraph gap</li>
-            <li>Multicolour pen mein: <code>Definition: ...</code> = hara, <code>Warning: ...</code> = laal</li>
+            <li><code>- text</code> or <code>* text</code> = Bullet point</li>
+            <li>A short ALL CAPS line = Heading (automatic)</li>
+            <li>A short line ending with <code>:</code> = Subheading (automatic)</li>
+            <li>Empty line = Paragraph gap</li>
+            <li>With the Multicolour pen: <code>Definition: ...</code> = green, <code>Warning: ...</code> = red</li>
           </ul>
         </div>
       </section>
@@ -171,7 +171,7 @@
       <section class="view" id="view-projects">
         <div class="card">
           <h3>📁 My Projects</h3>
-          <p class="muted">Har assignment apne aap save hoti hai: text, paper, pen aur cover sab. Ye sirf is phone ke browser mein save rehta hai.</p>
+          <p class="muted">Every assignment saves automatically: text, paper, pen and cover, all of it. This is saved only in this phone's browser.</p>
           <div class="toolbar">
             <button class="btn-main" id="projNew" type="button">➕ New Assignment</button>
             <button class="btn" id="projImport" type="button">⬆️ Import</button>
@@ -182,18 +182,18 @@
 
         <div class="card">
           <h3>🛠️ Settings</h3>
-          <p class="muted">Is project ki Paper aur Pen settings default par laao. Tumhara text aur cover safe rehte hain.</p>
+          <p class="muted">Reset this project's Paper and Pen settings to default. Your text and cover stay safe.</p>
           <div class="toolbar">
             <button class="btn btn-danger" id="projReset" type="button">↩️ Reset Paper + Pen settings</button>
           </div>
-          <p class="muted small">Backup ke liye: kisi bhi project par ⬇️ Export dabao. Wo .json file tumhare Downloads mein aayegi.</p>
+          <p class="muted small">For backup: tap ⬇️ Export on any project. The .json file will go to your Downloads.</p>
         </div>
       </section>
 
       <section class="view" id="view-styles">
         <div class="card">
           <h3>👀 Live Sample</h3>
-          <p class="muted">Jo bhi badlo, yahan turant dikhega.</p>
+          <p class="muted">Whatever you change shows up here instantly.</p>
           <div class="sample-wrap"><canvas id="sSample"></canvas></div>
         </div>
 
@@ -202,31 +202,31 @@
           <div class="pens" id="sPens"></div>
 
           <div class="frow" id="sCustomRow">
-            <label for="sCustom">Apna custom colour chuno</label>
+            <label for="sCustom">Choose your custom colour</label>
             <input type="color" id="sCustom">
           </div>
 
-          <label class="check" id="sHeadRow"><input type="checkbox" id="sHeadOn"> Headings ke liye alag pen colour</label>
+          <label class="check" id="sHeadRow"><input type="checkbox" id="sHeadOn"> Use a separate pen colour for headings</label>
           <div class="frow" id="sHeadColorRow">
-            <label for="sHead">Heading ka colour</label>
+            <label for="sHead">Heading colour</label>
             <input type="color" id="sHead">
           </div>
 
           <div id="sMultiBox">
-            <p class="muted">Multicolour Notes Mode: har type ka colour badal sakte ho.</p>
+            <p class="muted">Multicolour Notes Mode: you can change the colour for each type.</p>
             <div class="multi-grid" id="sMultiGrid"></div>
-            <p class="muted small">Tip: <code>Definition: ...</code>, <code>Important: ...</code> likhoge to hara. <code>Warning: ...</code>, <code>Note: ...</code> likhoge to laal.</p>
+            <p class="muted small">Tip: writing <code>Definition: ...</code>, <code>Important: ...</code> turns it green. Writing <code>Warning: ...</code>, <code>Note: ...</code> turns it red.</p>
           </div>
         </div>
 
         <div class="card">
           <h3>🔤 Handwriting Font</h3>
-          <p class="muted">Kisi bhi font par dabao. Hindi text ke liye Kalam apne aap use hota hai.</p>
+          <p class="muted">Tap any font. Kalam is used automatically for Hindi text.</p>
           <div class="font-grid" id="sFonts"></div>
         </div>
 
         <div class="card">
-          <h3>🎚️ Size aur Spacing</h3>
+          <h3>🎚️ Size and Spacing</h3>
           <div class="frow">
             <label for="sSize">Font size <span class="rv" id="sSizeV"></span></label>
             <input type="range" id="sSize" min="16" max="44" step="1">
@@ -235,13 +235,13 @@
             <label for="sCS">Character spacing <span class="rv" id="sCSV"></span></label>
             <input type="range" id="sCS" min="-1" max="6" step="0.1">
           </div>
-          <p class="warn-note" id="sWarn">⚠️ Font size line spacing se bada hai. Text lines par chadh sakta hai. Paper tab mein Line spacing badhao ya font size ghatao.</p>
-          <p class="muted">Line spacing Paper tab mein hai.</p>
-          <div class="toolbar"><button class="btn" type="button" data-go="paper">📄 Paper tab kholo</button></div>
+          <p class="warn-note" id="sWarn">⚠️ Font size is larger than the line spacing. Text may overlap lines. Increase Line spacing in the Paper tab or reduce the font size.</p>
+          <p class="muted">Line spacing is in the Paper tab.</p>
+          <div class="toolbar"><button class="btn" type="button" data-go="paper">📄 Open Paper tab</button></div>
         </div>
 
         <div class="card">
-          <h3>✒️ Ink aur Pen Texture</h3>
+          <h3>✒️ Ink and Pen Texture</h3>
           <div class="frow">
             <label for="sInk">Ink thickness <span class="rv" id="sInkV"></span></label>
             <input type="range" id="sInk" min="0" max="1.2" step="0.05">
@@ -254,18 +254,18 @@
             <label for="sTex">Pen texture</label>
             <select id="sTex"></select>
           </div>
-          <label class="check"><input type="checkbox" id="sImp"> Slight handwriting imperfections (thoda natural variation)</label>
+          <label class="check"><input type="checkbox" id="sImp"> Slight handwriting imperfections (a bit of natural variation)</label>
           <div class="toolbar">
             <button class="btn" id="sReset" type="button">↩️ Reset Pen Settings</button>
-            <button class="btn" type="button" data-go="editor">👀 Preview dekho</button>
+            <button class="btn" type="button" data-go="editor">👀 View preview</button>
           </div>
         </div>
       </section>
 
       <section class="view" id="view-paper">
         <div class="card">
-          <h3>📄 Paper Chuno</h3>
-          <p class="muted">Koi bhi paper dabao. Selected paper par neela border aata hai.</p>
+          <h3>📄 Choose Paper</h3>
+          <p class="muted">Tap any paper. The selected paper gets a blue border.</p>
           <div class="tpl-grid" id="tplGrid"></div>
         </div>
 
@@ -337,7 +337,7 @@
           </div>
           <div class="toolbar">
             <button class="btn" id="pReset" type="button">↩️ Reset Paper</button>
-            <button class="btn" type="button" data-go="editor">👀 Preview dekho</button>
+            <button class="btn" type="button" data-go="editor">👀 View preview</button>
           </div>
         </div>
       </section>
@@ -358,8 +358,8 @@
       <section class="view" id="view-help">
         <div class="card">
           <h3>Help & About</h3>
-          <p><b>WriteMyNotes AI</b> aapke text ko handwriting-style digital pages mein badalta hai. Ye asli insaani handwriting nahi hai, sirf handwriting jaisa dikhne wala digital text hai.</p>
-          <p>Sab kuch aapke browser mein chalta hai. Aapka text kisi server par nahi jata.</p>
+          <p><b>WriteMyNotes AI</b> turns your text into handwriting-style digital pages. This is not real human handwriting, just digital text styled to look like handwriting.</p>
+          <p>Everything runs in your browser. Your text never goes to any server.</p>
         </div>
       </section>
     </main>
