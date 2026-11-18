@@ -2,11 +2,10 @@
   'use strict';
   const W = window.WMN;
   const E = W && W.engine;
-  if (!E) { console.error('engine.js load nahi hua'); return; }
+  if (!E) { console.error('engine.js not loaded'); return; }
   const $id = id => document.getElementById(id);
   if (!$id('cvCard')) return;
 
-  /* key, label, max length, wide?, placeholder */
   const FIELDS = [
     ['school', 'School / College Name', 80, true, 'e.g. ABC Public School'],
     ['title', 'Assignment Title', 120, true, 'e.g. Chapter 1 Notes'],
@@ -37,7 +36,6 @@
     return m[3] + ' ' + MONTHS[mi] + ' ' + m[1];
   }
 
-  /* ---------- State ---------- */
   const DEFAULT_F = {};
   FIELDS.forEach(f => { DEFAULT_F[f[0]] = ''; });
 
@@ -60,11 +58,10 @@
   try {
     const raw = load('wmn_cover');
     if (raw) state = sanitize(JSON.parse(raw));
-  } catch (e) { /* default use hoga */ }
+  } catch (e) { /* use default */ }
 
   function save() { store('wmn_cover', JSON.stringify(state)); }
 
-  /* ---------- Text helpers ---------- */
   function ellipsize(ctx, text, maxW) {
     if (ctx.measureText(text).width <= maxW) return text;
     const ch = Array.from(text);
@@ -132,7 +129,6 @@
     ctx.closePath();
   }
 
-  /* ---------- Common content (text + rows) ---------- */
   function content(ctx, s, d, o) {
     const k = o.k, fs = s.fontScale || 1;
     const hf = sz => Math.round(sz) + 'px ' + s.fontFamily;
@@ -143,7 +139,6 @@
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = o.align;
 
-    /* School */
     const school = d.school.trim();
     if (school) {
       const f = fit(ctx, school, hf, 36 * k * fs, 16 * k * fs, maxW);
@@ -151,7 +146,6 @@
       hText(ctx, s, f.text, ax, o.schoolY, o.schoolColor || head);
     }
 
-    /* "ASSIGNMENT" label + title */
     ctx.font = pf('600', 15 * k);
     ctx.fillStyle = o.accent;
     ctx.fillText('A S S I G N M E N T', ax, o.titleY - 58 * k);
@@ -175,7 +169,6 @@
     else { ctx.moveTo(ax, lastY + 16 * k); ctx.lineTo(ax + 140 * k, lastY + 16 * k); }
     ctx.stroke();
 
-    /* Detail rows */
     const rows = [
       ['Student Name', d.name], ['Roll Number', d.roll], ['Class', d.cls],
       ['Section', d.section], ['Subject', d.subject], ['Teacher Name', d.teacher],
@@ -211,7 +204,6 @@
     });
   }
 
-  /* ---------- Templates (decoration + layout) ---------- */
   const TPL = {
     classic: function (ctx, s, k) {
       const W_ = s.pageW, H = s.pageH;
@@ -249,225 +241,3 @@
       ctx.fillStyle = '#4f6bff';
       ctx.fillRect(56 * k, 0, 12 * k, H);
       ctx.fillStyle = '#8b5cf6';
-      ctx.fillRect(56 * k, 0, 12 * k, H * 0.22);
-      return { align: 'left', x0: 120 * k, x1: W_ - 80 * k, schoolY: H * 0.14, titleY: H * 0.34,
-        rowsY: H * 0.52, accent: '#4f6bff', label: '#555555', rule: '#c5c9dd' };
-    },
-
-    notebook: function (ctx, s, k) {
-      const W_ = s.pageW, H = s.pageH;
-      const rowsY = H * 0.56;
-      const gap = Math.min(62 * k, (H * 0.92 - rowsY) / 7);
-      const step = gap / 2;
-      const y0 = rowsY + 8 * k;
-      ctx.strokeStyle = s.lineColor;
-      ctx.lineWidth = Math.max(1, k);
-      ctx.beginPath();
-      for (let y = y0 - Math.floor(y0 / step) * step; y < H; y += step) {
-        ctx.moveTo(0, y); ctx.lineTo(W_, y);
-      }
-      ctx.stroke();
-      ctx.strokeStyle = '#e06666';
-      ctx.lineWidth = 1.5 * k;
-      ctx.beginPath(); ctx.moveTo(76 * k, 0); ctx.lineTo(76 * k, H); ctx.stroke();
-
-      rr(ctx, 100 * k, H * 0.2, W_ - 200 * k, H * 0.25, 22 * k);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.strokeStyle = '#5b6bd6';
-      ctx.lineWidth = 3 * k;
-      ctx.setLineDash([12 * k, 7 * k]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      return { align: 'center', x0: 130 * k, x1: W_ - 130 * k, schoolY: H * 0.15, titleY: H * 0.32,
-        rowsY: rowsY, rowGap: gap, rx0: 110 * k, rx1: W_ - 70 * k,
-        accent: '#5b6bd6', label: '#444444', rule: s.lineColor };
-    },
-
-    elegant: function (ctx, s, k) {
-      const W_ = s.pageW, H = s.pageH;
-      ctx.strokeStyle = '#7c3aed';
-      ctx.lineWidth = 4 * k;
-      rr(ctx, 40 * k, 40 * k, W_ - 80 * k, H - 80 * k, 30 * k);
-      ctx.stroke();
-      ctx.strokeStyle = '#c4b5fd';
-      ctx.lineWidth = 1.5 * k;
-      rr(ctx, 58 * k, 58 * k, W_ - 116 * k, H - 116 * k, 20 * k);
-      ctx.stroke();
-      [H * 0.1, H * 0.9].forEach(y => {
-        const cx = W_ / 2;
-        ctx.strokeStyle = '#7c3aed';
-        ctx.lineWidth = 2 * k;
-        ctx.beginPath();
-        ctx.moveTo(cx - 160 * k, y); ctx.lineTo(cx - 20 * k, y);
-        ctx.moveTo(cx + 20 * k, y); ctx.lineTo(cx + 160 * k, y);
-        ctx.stroke();
-        ctx.fillStyle = '#7c3aed';
-        ctx.beginPath();
-        ctx.moveTo(cx, y - 9 * k); ctx.lineTo(cx + 9 * k, y);
-        ctx.lineTo(cx, y + 9 * k); ctx.lineTo(cx - 9 * k, y);
-        ctx.closePath(); ctx.fill();
-      });
-      return { align: 'center', x0: 120 * k, x1: W_ - 120 * k, schoolY: H * 0.19, titleY: H * 0.37,
-        rowsY: H * 0.53, rx0: 150 * k, rx1: W_ - 150 * k,
-        accent: '#7c3aed', label: '#4b3a7a', rule: '#c4b5fd' };
-    }
-  };
-
-  /* ---------- Main draw ---------- */
-  function drawCover(canvas, s, scale, d, tplId) {
-    scale = scale || 2;
-    canvas.width = Math.max(1, Math.round(s.pageW * scale));
-    canvas.height = Math.max(1, Math.round(s.pageH * scale));
-    const ctx = canvas.getContext('2d');
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.fillStyle = s.paperColor;
-    ctx.fillRect(0, 0, s.pageW, s.pageH);
-
-    const k = Math.min(s.pageW / 794, s.pageH / 1123);
-    const fn = TPL[tplId] || TPL.classic;
-    ctx.save();
-    const o = fn(ctx, s, k);
-    ctx.restore();
-    o.k = k;
-    ctx.save();
-    content(ctx, s, d, o);
-    ctx.restore();
-  }
-
-  /* ---------- UI ---------- */
-  const onBox = $id('cvOn');
-  const body = $id('cvBody');
-  const fieldsEl = $id('cvFields');
-  const tplEl = $id('cvTpls');
-  const inputs = {};
-
-  FIELDS.forEach(f => {
-    const lab = document.createElement('label');
-    if (f[3]) lab.className = 'wide';
-    const sp = document.createElement('span');
-    sp.textContent = f[1];
-    const inp = document.createElement('input');
-    inp.type = f[0] === 'date' ? 'date' : 'text';
-    if (f[0] !== 'date') inp.maxLength = f[2];
-    if (f[4]) inp.placeholder = f[4];
-    inp.autocomplete = 'off';
-    lab.appendChild(sp);
-    lab.appendChild(inp);
-    fieldsEl.appendChild(lab);
-    inputs[f[0]] = inp;
-    inp.addEventListener('input', () => { state.f[f[0]] = inp.value; changed(); });
-  });
-
-  const thumbs = [];
-  TPLS.forEach(t => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'tpl';
-    b.dataset.id = t[0];
-    const th = document.createElement('div');
-    th.className = 'tpl-thumb';
-    const cv = document.createElement('canvas');
-    th.appendChild(cv);
-    const nm = document.createElement('span');
-    nm.className = 'tpl-name';
-    nm.textContent = t[1];
-    b.appendChild(th);
-    b.appendChild(nm);
-    tplEl.appendChild(b);
-    thumbs.push({ id: t[0], cv: cv });
-    b.addEventListener('click', () => { state.tpl = t[0]; changed(); });
-  });
-
-  const SAMPLE_D = {
-    school: 'ABC Public School', title: 'Chapter 1 Notes', name: 'Rahul Sharma', roll: '24',
-    cls: '10', section: 'B', subject: 'Physics', teacher: 'Mrs. Gupta', date: '2026-11-06'
-  };
-
-  async function drawThumbs() {
-    try {
-      const s = E.merge({ imperfect: false });
-      await E.ensureFonts(s);
-      thumbs.forEach(t => {
-        drawCover(t.cv, s, 300 / s.pageH, SAMPLE_D, t.id);
-        t.cv.style.height = '150px';
-        t.cv.style.width = 'auto';
-      });
-    } catch (err) { console.error(err); }
-  }
-
-  function applyToControls() {
-    onBox.checked = state.on;
-    FIELDS.forEach(f => { inputs[f[0]].value = state.f[f[0]]; });
-  }
-
-  function updateUI() {
-    body.classList.toggle('open', state.on);
-    Array.from(tplEl.children).forEach(b => b.classList.toggle('active', b.dataset.id === state.tpl));
-  }
-
-  let timer = null;
-  function refresh() {
-    clearTimeout(timer);
-    timer = setTimeout(() => { if (W.refreshPreview) W.refreshPreview(); }, 150);
-  }
-  function changed() { save(); updateUI(); refresh(); }
-
-  onBox.addEventListener('change', () => {
-    state.on = onBox.checked;
-    changed();
-    if (state.on) toast('Cover page on. Preview mein "Cover page" chuno', 'success');
-  });
-
-  $id('cvToday').addEventListener('click', () => {
-    const t = new Date();
-    state.f.date = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
-    inputs.date.value = state.f.date;
-    changed();
-  });
-
-  $id('cvClear').addEventListener('click', () => {
-    if (!FIELDS.some(f => state.f[f[0]])) { toast('Cover details pehle se khaali hain'); return; }
-    if (!confirm('Cover ki saari details delete kar dein?')) return;
-    state.f = Object.assign({}, DEFAULT_F);
-    applyToControls();
-    changed();
-    toast('Cover details clear ho gayi', 'success');
-  });
-
-  $id('cvSee').addEventListener('click', () => {
-    const pv = $id('pvCard');
-    if (pv) pv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-
-  /* ---------- Preview / PDF ke liye ---------- */
-  W.cover = {
-    provider: function () {
-      if (!state.on) return null;
-      const d = JSON.parse(JSON.stringify(state.f));
-      const t = state.tpl;
-      return function (canvas, s, scale) { drawCover(canvas, s, scale, d, t); };
-    },
-    getState: function () { return JSON.parse(JSON.stringify(state)); },
-    setState: function (o) {
-      state = sanitize(o);
-      applyToControls();
-      updateUI();
-      save();
-      refresh();
-    }
-  };
-
-  /* ---------- Start ---------- */
-  applyToControls();
-  updateUI();
-  drawThumbs();
-
-  /* Cover ke printed labels ke liye Poppins load hone ke baad dobara draw */
-  if (document.fonts && document.fonts.load) {
-    Promise.all([
-      document.fonts.load('500 16px Poppins'),
-      document.fonts.load('600 15px Poppins')
-    ]).then(() => { drawThumbs(); if (state.on) refresh(); }).catch(() => {});
-  }
-})();
