@@ -51,7 +51,6 @@
   } catch (e) { /* default */ }
   function saveSt() { store('wmn_smart', JSON.stringify(st)); }
 
-  /* Tap se kiye gaye fixes: line ka text -> type */
   const OPTS = ['heading', 'subheading', 'normal', 'def', 'warn'];
   let over = {};
   try {
@@ -63,9 +62,9 @@
     }
   } catch (e) { over = {}; }
 
-  let ver = 0;   // badalne par PDF cache purana na rahe
+  let ver = 0;
 
-  /* ---------- Rules ---------- */
+  /* ---------- Rules (unchanged — detects both English and Hindi content) ---------- */
   const BULCH = '[-*\\u2022\\u25AA\\u25CF\\u25E6\\u2023\\u25CB\\u25A0\\u25A1\\u2713\\u2714\\u27A2\\u27A4]';
   const BUL = new RegExp('^' + BULCH + '\\s+(.+)$');
   const MARK = new RegExp('^(#{1,6}\\s|' + BULCH + '\\s|\\d+[.)]\\s)');
@@ -89,7 +88,6 @@
     if (RE.def.test(t)) return 'def';
     return 'body';
   }
-  /* chhoti, bina full-stop wali line = heading ki ummeed */
   function isCand(t) {
     if (!t || chars(t) > 70 || words(t) > 9) return false;
     if (END.test(t)) return false;
@@ -99,7 +97,6 @@
   }
   function stripMarks(t) { return t.replace(/^#{1,6}\s+/, '').replace(BULSTRIP, ''); }
 
-  /* PDF/website se copy kiye toote hue lines jodo */
   function joinLines(lines) {
     const out = [];
     for (const raw of lines) {
@@ -130,7 +127,6 @@
     return b;
   }
 
-  /* ---------- Smart parser ---------- */
   function smartParse(raw) {
     let lines = String(raw).replace(/\r\n?/g, '\n').split('\n');
     if (st.join) lines = joinLines(lines);
@@ -199,7 +195,6 @@
       items.push({ type: 'paragraph', text: t, key: t, role: roleOf(t) });
     }
 
-    /* H1 / H2 ka faisla */
     const hs = items.filter(x => x.strength !== undefined);
     const has3 = hs.some(x => x.strength === 3);
     const has2 = hs.some(x => x.strength === 2);
@@ -224,7 +219,7 @@
     return out;
   }
 
-  /* ---------- Structure list (tap se fix) ---------- */
+  /* ---------- Structure list (tap to fix) ---------- */
   const MENU = [['H1', 'heading'], ['H2', 'subheading'], ['Normal', 'normal'], ['Definition', 'def'], ['Warning', 'warn']];
   let blocks = [];
   let openIdx = -1;
@@ -250,10 +245,10 @@
     if (!st.on) return;
     box.textContent = '';
     if (!blocks.length) {
-      box.appendChild(mk('p', 'sempty', 'Text likhoge to yahan structure dikhega.'));
+      box.appendChild(mk('p', 'sempty', 'Your text structure will appear here as you type.'));
       return;
     }
-    box.appendChild(mk('div', 'shint', 'Kisi line par tap karke uska type badlo.'));
+    box.appendChild(mk('div', 'shint', 'Tap any line to change its type.'));
     const LIMIT = 400;
     blocks.slice(0, LIMIT).forEach((b, i) => {
       if (b.type === 'space') { box.appendChild(mk('div', 'sline space')); return; }
@@ -280,7 +275,7 @@
       }
     });
     if (blocks.length > LIMIT) {
-      box.appendChild(mk('div', 'smore', '... aur lines (yahan sirf pehli ' + LIMIT + ' dikhti hain)'));
+      box.appendChild(mk('div', 'smore', '... and more lines (only the first ' + LIMIT + ' are shown here)'));
     }
   }
 
@@ -291,14 +286,14 @@
     ver++;
     openIdx = -1;
     if (st.on) reparse();
-    ta.dispatchEvent(new Event('input', { bubbles: true }));   // preview aur save refresh
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
   function setOver(key, val) {
     if (!key) return;
     if (val === null) delete over[key];
     else {
-      if (!over[key] && Object.keys(over).length >= 400) { toast('Fixes ki limit (400) poori ho gayi', 'error'); return; }
+      if (!over[key] && Object.keys(over).length >= 400) { toast('Fix limit (400) reached', 'error'); return; }
       over[key] = val;
     }
     commit();
@@ -309,7 +304,7 @@
   const card = mk('div', 'card');
   card.id = 'smartCard';
   card.appendChild(mk('h3', '', '🪄 Smart Detect'));
-  card.appendChild(mk('p', 'muted', 'Text paste karte hi app khud pehchanta hai: heading, subheading, definition aur warning. Galti ho to neeche list mein line par tap karke theek karo.'));
+  card.appendChild(mk('p', 'muted', 'As soon as you paste your text, the app automatically detects headings, subheadings, definitions and warnings. If it gets something wrong, tap that line in the list below to fix it.'));
 
   function check(id, label) {
     const l = mk('label', 'check');
@@ -321,19 +316,19 @@
     card.appendChild(l);
     return i;
   }
-  const smOn = check('smOn', 'Smart detect on rakho');
-  const smJoin = check('smJoin', 'Toote hue lines jodo (PDF ya website se copy kiye text ke liye)');
+  const smOn = check('smOn', 'Keep Smart Detect on');
+  const smJoin = check('smJoin', 'Join broken lines (useful for text copied from a PDF or a website)');
   const colorsEl = mk('div', 'sm-colors');
   const legendEl = mk('ul', 'sm-legend');
   card.appendChild(colorsEl);
   card.appendChild(legendEl);
   const tb = mk('div', 'toolbar');
-  tb.appendChild(btn('↩️ Meri saari fixes hatao', () => {
-    if (!Object.keys(over).length) { toast('Abhi koi fix nahi hai'); return; }
-    if (!confirm('Tap karke kiye gaye saare fixes hata dein?')) return;
+  tb.appendChild(btn('↩️ Clear all my fixes', () => {
+    if (!Object.keys(over).length) { toast('No fixes to clear yet'); return; }
+    if (!confirm('Remove all the fixes you made by tapping lines?')) return;
     over = {};
     commit();
-    toast('Fixes hat gaye', 'success');
+    toast('Fixes cleared', 'success');
   }));
   card.appendChild(tb);
   if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(card, anchor);
@@ -364,10 +359,10 @@
     const m = Object.assign({}, MULTI_DEF, ps.multi || {});
     colorsEl.textContent = '';
     if (multi) {
-      colorsEl.appendChild(mk('p', 'sm-ok', '✓ Auto colours on hain (Multicolour pen)'));
+      colorsEl.appendChild(mk('p', 'sm-ok', '✓ Auto colours are on (Multicolour pen)'));
     } else {
-      colorsEl.appendChild(mk('p', 'muted small', 'Alag colours ke liye Multicolour pen chahiye. Abhi koi aur pen chuna hua hai.'));
-      colorsEl.appendChild(btn('🎨 Auto colours on karo', () => {
+      colorsEl.appendChild(mk('p', 'muted small', 'Different colours need the Multicolour pen. A different pen is currently selected.'));
+      colorsEl.appendChild(btn('🎨 Turn on auto colours', () => {
         const b = document.querySelector('#sPens .pen[data-id="multi"]');
         if (b) { b.click(); setTimeout(updColors, 250); }
       }));
@@ -386,11 +381,9 @@
   document.addEventListener('click', () => { clearTimeout(ct); ct = setTimeout(updColors, 250); }, true);
   document.addEventListener('change', () => { clearTimeout(ct); ct = setTimeout(updColors, 250); }, true);
 
-  /* ---------- PDF cache ko batao ki smart settings badli hain ---------- */
   const prevGet = W.getSettings || function () { return {}; };
   W.getSettings = function () { return Object.assign({}, prevGet(), { smartVer: ver }); };
 
-  /* ---------- Text badle to list dobara banao ---------- */
   const saveEl = $id('saveState');
   if (saveEl) {
     new MutationObserver(() => {
@@ -398,7 +391,6 @@
     }).observe(saveEl, { childList: true, characterData: true, subtree: true });
   }
 
-  /* ---------- Start ---------- */
   W.parseText = st.on ? smartParse : origParse;
   updColors();
   if (st.on) reparse();
