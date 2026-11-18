@@ -11,7 +11,6 @@
     ];
   }
 
-  /* Page ki images ki jagah dhundo */
   async function find(page, OPS) {
     const ol = await page.getOperatorList();
     const fa = ol.fnArray, aa = ol.argsArray;
@@ -50,7 +49,6 @@
     return (w * h) / Math.min((a.x1 - a.x0) * (a.y1 - a.y0), (b.x1 - b.x0) * (b.y1 - b.y0));
   }
 
-  /* Chhoti icons, poore page ka background aur repeat hone wale logo hatao */
   function filter(pages) {
     const keyOf = c => Math.round((c.x1 - c.x0) / 8) + 'x' + Math.round((c.y1 - c.y0) / 8) + '@' + Math.round(c.x0 / 12) + ',' + Math.round(c.y0 / 12);
     const cnt = new Map();
@@ -74,7 +72,6 @@
     });
   }
 
-  /* Page ko render karke image wali jagah crop karo aur library mein save karo */
   async function crop(pdf, pages, env) {
     let made = 0, full = false;
     const withImg = pages.filter(pg => pg.keep && pg.keep.length).length;
@@ -84,7 +81,7 @@
       if (!pg.keep || !pg.keep.length) continue;
       if (env.isCancelled()) throw new Error('CANCELLED');
       doneP++;
-      env.progress('Images nikal raha hoon... (' + doneP + ' / ' + withImg + ' pages)', Math.round(84 + 14 * doneP / withImg));
+      env.progress('Extracting images... (' + doneP + ' / ' + withImg + ' pages)', Math.round(84 + 14 * doneP / withImg));
       const page = await pdf.getPage(p + 1);
       const vp = page.getViewport({ scale: 2.5 });
       const cv = document.createElement('canvas');
