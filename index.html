@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="projects.css">
   <link rel="stylesheet" href="myhandwriting.css">
   <link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="users.css">
 </head>
 <body>
   <div class="app">
@@ -32,6 +33,7 @@
       <button class="nav-btn" data-view="projects"><span>📁</span><em>Projects</em></button>
       <button class="nav-btn" data-view="styles"><span>🔤</span><em>Styles</em></button>
       <button class="nav-btn" data-view="paper"><span>📄</span><em>Paper</em></button>
+      <button class="nav-btn" data-view="users" id="navUsersBtn" style="display:none"><span>🛡️</span><em>Users</em></button>
       <button class="nav-btn" data-view="help"><span>❓</span><em>Help</em></button>
     </nav>
 
@@ -340,6 +342,19 @@
         </div>
       </section>
 
+      <section class="view" id="view-users">
+        <div class="card">
+          <h3>🛡️ Registered Users</h3>
+          <p class="muted">This list is visible only to the admin account.</p>
+          <div class="users-toolbar">
+            <input type="text" id="usersSearch" placeholder="Search by name or email">
+            <button class="btn" id="usersRefresh" type="button">🔄 Refresh</button>
+          </div>
+          <p class="muted small" id="usersStatus"></p>
+          <div id="usersTableWrap"></div>
+        </div>
+      </section>
+
       <section class="view" id="view-help">
         <div class="card">
           <h3>Help & About</h3>
@@ -366,5 +381,6 @@
   <script src="images.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
+  <script src="users.js"></script>
 </body>
 </html>
