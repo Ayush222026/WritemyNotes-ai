@@ -18,7 +18,7 @@
     '- Chlorophyll absorbs the sunlight',
     '- Oxygen is released as a by-product',
     '',
-    '## हिंदी सारांश',
+    '## Hindi Summary',
     'प्रकाश संश्लेषण वह क्रिया है जिसमें पौधे अपना भोजन बनाते हैं।'
   ].join('\n');
 
@@ -28,14 +28,10 @@
   const saveEl = document.getElementById('saveState');
   const structEl = document.getElementById('structure');
   const fileInput = document.getElementById('fileInput');
-  if (!input) { console.error('textInput nahi mila'); return; }
+  if (!input) { console.error('textInput not found'); return; }
 
-  /* ---------- Text parser (wording unchanged) ---------- */
   function isAutoHeading(t) {
-    return t.length <= 60 &&
-      t === t.toUpperCase() &&
-      t !== t.toLowerCase() &&
-      !/[.!?]$/.test(t);
+    return t.length <= 60 && t === t.toUpperCase() && t !== t.toLowerCase() && !/[.!?]$/.test(t);
   }
 
   function parseText(raw) {
@@ -70,7 +66,6 @@
     return clean;
   }
 
-  /* ---------- Counts ---------- */
   function updateCounts() {
     const text = input.value;
     const trimmed = text.trim();
@@ -80,7 +75,6 @@
     if (charEl) charEl.textContent = chars + (chars === 1 ? ' character' : ' characters');
   }
 
-  /* ---------- Structure preview ---------- */
   const BADGES = { heading: 'H1', subheading: 'H2', bullet: '•', paragraph: '¶' };
 
   function renderStructure() {
@@ -90,7 +84,7 @@
     if (!blocks.length) {
       const p = document.createElement('p');
       p.className = 'sempty';
-      p.textContent = 'Text likhoge to yahan structure dikhega.';
+      p.textContent = 'Your text structure will appear here as you type.';
       structEl.appendChild(p);
       return;
     }
@@ -113,12 +107,11 @@
     if (blocks.length > LIMIT) {
       const more = document.createElement('div');
       more.className = 'smore';
-      more.textContent = '... aur ' + (blocks.length - LIMIT) + ' lines (preview mein sirf pehli ' + LIMIT + ' dikhti hain)';
+      more.textContent = '... and ' + (blocks.length - LIMIT) + ' more lines (only the first ' + LIMIT + ' are shown in preview)';
       structEl.appendChild(more);
     }
   }
 
-  /* ---------- Auto-save ---------- */
   let timer = null;
   function onChange() {
     updateCounts();
@@ -133,24 +126,23 @@
 
   input.addEventListener('input', onChange);
 
-  /* ---------- Buttons ---------- */
   const bSample = document.getElementById('btnSample');
   const bClear = document.getElementById('btnClear');
   const bUpload = document.getElementById('btnUpload');
 
   if (bSample) bSample.addEventListener('click', () => {
-    if (input.value.trim() && !confirm('Abhi ka text hat jayega aur sample aa jayega. Continue?')) return;
+    if (input.value.trim() && !confirm('Your current text will be replaced by the sample. Continue?')) return;
     input.value = SAMPLE;
     onChange();
-    toast('Sample assignment load ho gaya', 'success');
+    toast('Sample assignment loaded', 'success');
   });
 
   if (bClear) bClear.addEventListener('click', () => {
-    if (!input.value) { toast('Text pehle se khaali hai'); return; }
-    if (!confirm('Saara text delete kar dein?')) return;
+    if (!input.value) { toast('Text is already empty'); return; }
+    if (!confirm('Delete all the text?')) return;
     input.value = '';
     onChange();
-    toast('Text clear ho gaya', 'success');
+    toast('Text cleared', 'success');
   });
 
   if (bUpload && fileInput) {
@@ -159,27 +151,26 @@
       const file = fileInput.files && fileInput.files[0];
       if (!file) return;
       const okType = /\.txt$/i.test(file.name) || file.type === 'text/plain';
-      if (!okType) { toast('Sirf .txt file upload karo', 'error'); fileInput.value = ''; return; }
-      if (file.size > 2 * 1024 * 1024) { toast('File 2MB se badi hai', 'error'); fileInput.value = ''; return; }
+      if (!okType) { toast('Only .txt files can be uploaded', 'error'); fileInput.value = ''; return; }
+      if (file.size > 2 * 1024 * 1024) { toast('File is larger than 2MB', 'error'); fileInput.value = ''; return; }
       const reader = new FileReader();
       reader.onload = () => {
         let text = String(reader.result || '');
         if (text.length > MAX_CHARS) {
           text = text.slice(0, MAX_CHARS);
-          toast('File bahut badi thi, pehle ' + MAX_CHARS + ' characters hi liye gaye', 'error');
+          toast('File was too large, only the first ' + MAX_CHARS + ' characters were used', 'error');
         } else {
-          toast('File load ho gayi', 'success');
+          toast('File loaded', 'success');
         }
         input.value = text;
         onChange();
       };
-      reader.onerror = () => toast('File padh nahi paaye', 'error');
+      reader.onerror = () => toast('Could not read the file', 'error');
       reader.readAsText(file, 'UTF-8');
       fileInput.value = '';
     });
   }
 
-  /* ---------- Start ---------- */
   input.value = load('wmn_text') || '';
   updateCounts();
   renderStructure();
