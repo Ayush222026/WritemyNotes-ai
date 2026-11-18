@@ -2,7 +2,7 @@
   'use strict';
   const W = window.WMN;
   const E = W && W.engine;
-  if (!E || !W.parseText || !W.getSettings) { console.error('Pehle ki files load nahi hui'); return; }
+  if (!E || !W.parseText || !W.getSettings) { console.error('Earlier files not loaded'); return; }
   const $id = id => document.getElementById(id);
   const dlBtn = $id('pdfDownload');
   if (!dlBtn) return;
@@ -10,7 +10,7 @@
   const qSel = $id('pdfQ'), info = $id('pdfInfo');
 
   const MM = 96 / 25.4;
-  const MAXPX = 12000000;              // ek canvas mein max pixels (phone safe)
+  const MAXPX = 12000000;
   const JSPDF_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
 
   function mk(tag, cls, txt) {
@@ -21,17 +21,15 @@
   }
   const tick = () => new Promise(r => setTimeout(r, 16));
 
-  /* ---------- Quality ---------- */
   qSel.value = load('wmn_pdfq') === '2' ? '2' : '3';
   qSel.addEventListener('change', () => store('wmn_pdfq', qSel.value));
-  info.textContent = 'Download, Preview ya Print dabao.';
+  info.textContent = 'Tap Download, Preview or Print.';
 
-  /* ---------- Loading overlay ---------- */
   const ov = mk('div', 'pdf-ov');
   ov.id = 'pdfLoading';
   ov.setAttribute('role', 'alertdialog');
   const box = mk('div', 'pdf-box');
-  const ovTxt = mk('p', 'pdf-txt', 'Taiyaar ho raha hai...');
+  const ovTxt = mk('p', 'pdf-txt', 'Getting ready...');
   const bar = mk('div', 'pdf-bar');
   const barIn = mk('span');
   bar.appendChild(barIn);
@@ -45,12 +43,11 @@
   document.body.appendChild(ov);
 
   let cancelled = false;
-  cancelB.addEventListener('click', () => { cancelled = true; ovTxt.textContent = 'Cancel ho raha hai...'; });
+  cancelB.addEventListener('click', () => { cancelled = true; ovTxt.textContent = 'Cancelling...'; });
 
   function showLoading(t, p) { ovTxt.textContent = t; barIn.style.width = p + '%'; ov.classList.add('show'); }
   function hideLoading() { ov.classList.remove('show'); }
 
-  /* ---------- Preview modal ---------- */
   const modal = mk('div', 'pdf-modal');
   modal.id = 'pdfModal';
   modal.setAttribute('role', 'dialog');
@@ -78,7 +75,6 @@
     if (e.key === 'Escape' && modal.classList.contains('show') && !ov.classList.contains('show')) closeModal();
   });
 
-  /* ---------- Print area ---------- */
   const printArea = mk('div');
   printArea.id = 'printArea';
   document.body.appendChild(printArea);
@@ -86,7 +82,6 @@
   pageStyle.id = 'pdfPageStyle';
   document.head.appendChild(pageStyle);
 
-  /* ---------- State ---------- */
   let cache = null;
   let busy = false;
 
@@ -95,8 +90,6 @@
     [dlBtn, prvBtn, prtBtn, mDl, mPr].forEach(x => { x.disabled = b; });
   }
 
-  /* ---------- Helpers ---------- */
-  /* px -> mm (A4/A5/Letter exact rakhne ke liye) */
   function pageMM(wpx, hpx) {
     if (wpx === 816 && hpx === 1056) return [215.9, 279.4];
     const f = v => {
@@ -140,7 +133,6 @@
     } catch (e) { /* ignore */ }
   }
 
-  /* Preview jaise hi pages banao (cover pehle) */
   async function gather() {
     const text = W.getText();
     const hasText = !!text.trim();
@@ -148,25 +140,24 @@
     if (!hasText && !coverFn) throw new Error('EMPTY');
     const all = W.getSettings();
     if (coverFn) await loadCoverFonts();
-    const r = await E.renderAll(W.parseText(text), all);   // fonts yahin load hote hain
+    const r = await E.renderAll(W.parseText(text), all);
     const pages = hasText ? r.pages.map(l => ({ lines: l })) : [];
     if (coverFn) pages.unshift({ cover: coverFn });
     return { s: r.settings, pages: pages, text: text, coverOn: !!coverFn };
   }
 
-  /* ---------- Build all page images ---------- */
   async function build() {
     cancelled = false;
-    showLoading('Fonts load ho rahe hain...', 3);
+    showLoading('Loading fonts...', 3);
     const g = await gather();
     const s = g.s;
     const sig = JSON.stringify([g.text, W.getSettings(), g.coverOn ? W.cover.getState() : null, qSel.value]);
     if (cache && cache.sig === sig) return cache;
-    cache = null;                                           // purani memory free
+    cache = null;
 
     const n = g.pages.length;
     let sc = Math.min(Number(qSel.value) || 3, Math.sqrt(MAXPX / (s.pageW * s.pageH)));
-    if (n > 30 && sc > 2) { sc = 2; toast('Pages zyada hain, isliye Standard quality use hui', 'info'); }
+    if (n > 30 && sc > 2) { sc = 2; toast('Too many pages, using Standard quality', 'info'); }
     if (sc < 1) sc = 1;
 
     const cv = document.createElement('canvas');
@@ -175,11 +166,11 @@
 
     for (let i = 0; i < n; i++) {
       if (cancelled) throw new Error('CANCELLED');
-      showLoading('Page ' + (i + 1) + ' / ' + n + ' ban raha hai...', Math.round(5 + 90 * i / n));
+      showLoading('Building page ' + (i + 1) + ' / ' + n + '...', Math.round(5 + 90 * i / n));
       await tick();
       const p = g.pages[i];
       if (p.cover) p.cover(cv, s, sc);
-      else E.drawPage(cv, p.lines, s, i, sc);              // index i = preview jaisa
+      else E.drawPage(cv, p.lines, s, i, sc);
       const url = cv.toDataURL('image/jpeg', 0.92);
       if (url.indexOf('data:image/jpeg') !== 0) throw new Error('CANVAS');
       images.push(url);
@@ -189,30 +180,29 @@
 
     const mm = pageMM(s.pageW, s.pageH);
     cache = { sig: sig, images: images, labels: labels, wmm: mm[0], hmm: mm[1], count: n, dpi: Math.round(96 * sc) };
-    info.textContent = 'Taiyaar: ' + n + (n === 1 ? ' page' : ' pages') + '  •  ' + mm[0] + ' × ' + mm[1] + ' mm  •  ' + cache.dpi + ' dpi';
+    info.textContent = 'Ready: ' + n + (n === 1 ? ' page' : ' pages') + '  •  ' + mm[0] + ' × ' + mm[1] + ' mm  •  ' + cache.dpi + ' dpi';
     return cache;
   }
 
   function fail(e) {
     const m = e && e.message;
-    if (m === 'EMPTY') toast('Pehle text likho ya cover page on karo', 'error');
-    else if (m === 'CANCELLED') toast('PDF cancel ho gayi');
-    else if (m === 'NOLIB') toast('PDF library load nahi hui. Internet check karke dobara try karo', 'error');
+    if (m === 'EMPTY') toast('Write some text first or turn on the cover page', 'error');
+    else if (m === 'CANCELLED') toast('PDF cancelled');
+    else if (m === 'NOLIB') toast('PDF library could not load. Check your internet and try again', 'error');
     else {
       console.error(e);
-      toast('PDF banane mein error aaya. Quality "Standard" karke try karo', 'error');
+      toast('Something went wrong creating the PDF. Try Standard quality', 'error');
     }
   }
 
-  /* ---------- Actions ---------- */
   async function doDownload() {
     if (busy) return;
     setBusy(true);
     try {
-      showLoading('Taiyaar ho raha hai...', 2);
+      showLoading('Getting ready...', 2);
       const JsPDF = await getJsPDF();
       const c = await build();
-      showLoading('PDF file ban rahi hai...', 97);
+      showLoading('Building the PDF file...', 97);
       await tick();
       const w = c.wmm, h = c.hmm;
       const orient = w > h ? 'l' : 'p';
@@ -224,7 +214,7 @@
         doc.addImage(img, 'JPEG', 0, 0, w, h, undefined, 'FAST');
       });
       doc.save(fileName());
-      toast('PDF download ho gayi (' + c.count + (c.count === 1 ? ' page)' : ' pages)'), 'success');
+      toast('PDF downloaded (' + c.count + (c.count === 1 ? ' page)' : ' pages)'), 'success');
     } catch (e) {
       fail(e);
     } finally {
@@ -266,7 +256,7 @@
     setBusy(true);
     try {
       const c = await build();
-      showLoading('Print ke liye taiyaar ho raha hai...', 97);
+      showLoading('Getting ready to print...', 97);
       printArea.textContent = '';
       pageStyle.textContent = '@page{size:' + c.wmm + 'mm ' + c.hmm + 'mm;margin:0}';
       const imgs = [];
