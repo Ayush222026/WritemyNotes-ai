@@ -1,7 +1,7 @@
 (function () {
   'use strict';
   const E = window.WMN && window.WMN.engine;
-  if (!E) { console.error('engine.js load nahi hua'); return; }
+  if (!E) { console.error('engine.js not loaded'); return; }
 
   const $id = id => document.getElementById(id);
   const MM = 96 / 25.4;
@@ -60,7 +60,6 @@
     return o;
   }
 
-  /* Paper settings -> engine settings */
   function settingsFrom(v) {
     const sz = v.size === 'custom'
       ? { w: Math.round(v.wmm * MM), h: Math.round(v.hmm * MM) }
@@ -84,7 +83,6 @@
     };
   }
 
-  /* ---------- State ---------- */
   const state = { tpl: 'a4-ruled', v: P({}) };
   (function restore() {
     try {
@@ -95,13 +93,12 @@
         state.tpl = o.tpl;
         state.v = sanitize(o.v);
       }
-    } catch (e) { /* default use hoga */ }
+    } catch (e) { /* use default */ }
   })();
 
   function save() { store('wmn_paper', JSON.stringify({ tpl: state.tpl, v: state.v })); }
   function findTpl(id) { return TEMPLATES.find(t => t.id === id); }
 
-  /* ---------- Thumbnails ---------- */
   function drawThumb(cv, v, heightPx, lw) {
     const s = E.merge(Object.assign(settingsFrom(v), { thumb: true, lineW: lw, imperfect: false }));
     const scale = (heightPx * 2) / s.pageH;
@@ -147,7 +144,6 @@
       Math.round(s.pageW / MM) + ' × ' + Math.round(s.pageH / MM) + ' mm';
   }
 
-  /* ---------- Controls ---------- */
   const el = {
     size: $id('pSize'), w: $id('pW'), h: $id('pH'), color: $id('pColor'),
     lineStyle: $id('pLineStyle'), lineColor: $id('pLineColor'),
@@ -204,7 +200,6 @@
     v.lineSpacing = Number(el.spacing.value);
   }
 
-  /* ---------- Actions ---------- */
   function refreshPreview() {
     if (window.WMN.refreshPreview) window.WMN.refreshPreview();
   }
@@ -246,13 +241,11 @@
   $id('pReset').addEventListener('click', () => {
     const base = state.tpl === 'custom' ? 'a4-ruled' : state.tpl;
     choose(base);
-    toast('Paper reset ho gaya', 'success');
+    toast('Paper reset', 'success');
   });
 
-  /* ---------- Engine ko paper settings do ---------- */
   window.WMN.getSettings = function () { return settingsFrom(state.v); };
 
-  /* ---------- Start ---------- */
   applyToControls();
   drawAllThumbs();
   drawBig();
